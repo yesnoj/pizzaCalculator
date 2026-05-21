@@ -39,7 +39,7 @@ import java.time.format.DateTimeFormatter
 // ── Preset lists ────────────────────────────────────────────────
 private val PRESET_PANETTI     = listOf("2", "4", "6", "8")
 private val PRESET_PESO        = listOf("180", "220", "250", "280")
-private val PRESET_ORE         = listOf("6", "8", "12", "24", "48")
+private val PRESET_ORE         = listOf("1", "2", "4", "6", "8", "12", "24", "48")
 private val PRESET_IDRATAZIONE = listOf("60", "63", "65", "70")
 
 private val MODE_PANETTI = "Per Panetti"
