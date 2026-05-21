@@ -1,21 +1,24 @@
+/* ============================================================
+ * PizzaLab — Quaderno direction
+ * Compose / Material 3 tokens.
+ *
+ * Drop this in app/src/main/java/com/pizzalab/ui/theme/QuadernoTheme.kt
+ * and call PizzaLabTheme to use. Replaces the existing Theme.kt's
+ * LightColorScheme.
+ * ============================================================ */
+
 package com.pizzalab.ui.theme
 
-import android.app.Activity
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Typography
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowCompat
 
-// ── Palette Quaderno ────────────────────────────────────────────
+// ── Palette ──────────────────────────────────────────────────
 object QuadernoColors {
     val Paper       = Color(0xFFFDF9EE)  // card surface, dialog
     val Bg          = Color(0xFFF5EEDC)  // app background — aged paper
@@ -24,7 +27,7 @@ object QuadernoColors {
     val Ink2        = Color(0xFF65553E)  // secondary text
     val Ink3        = Color(0xFF9D8B6E)  // meta, placeholder, italic
     val Rule        = Color(0xFFD9CEB3)  // solid hairline
-    val RuleDots    = Color(0xFFC5B591)  // dotted hairline
+    val RuleDots    = Color(0xFFC5B591)  // dotted hairline (use dashedStroke)
     val Primary     = Color(0xFFA8392B)  // tomato — single accent
     val PrimaryHi   = Color(0xFFC04A2A)  // hover / pressed
     val Olive       = Color(0xFF5E6B3D)  // secondary accent
@@ -37,18 +40,21 @@ object QuadernoColors {
 }
 
 // ── ColorScheme — maps the Quaderno palette into Material 3 slots ──
+//
+// onPrimary uses Paper (not pure white) so primary buttons stay
+// warm. surface = Paper so cards lift slightly off the bg.
 val QuadernoColorScheme = lightColorScheme(
     primary             = QuadernoColors.Primary,
     onPrimary           = QuadernoColors.Paper,
-    primaryContainer    = Color(0xFFF5D4CB),
+    primaryContainer    = Color(0xFFF5D4CB),       // 14% Primary on Paper
     onPrimaryContainer  = QuadernoColors.Primary,
 
     secondary           = QuadernoColors.Olive,
     onSecondary         = QuadernoColors.Paper,
-    secondaryContainer  = Color(0xFFDDE2CC),
+    secondaryContainer  = Color(0xFFDDE2CC),       // 14% Olive on Paper
     onSecondaryContainer= QuadernoColors.OliveDk,
 
-    tertiary            = QuadernoColors.Ink,
+    tertiary            = QuadernoColors.Ink,      // dark CTA = "neutral primary"
     onTertiary          = QuadernoColors.Paper,
     tertiaryContainer   = QuadernoColors.BgWarmer,
     onTertiaryContainer = QuadernoColors.Ink,
@@ -66,35 +72,36 @@ val QuadernoColorScheme = lightColorScheme(
     onError             = QuadernoColors.Paper,
 )
 
-// ── Typography — Inter-style, distinct weights ─────────────────
-// Note: Inter font files should be added to res/font/ for full fidelity.
-// Without them, the system default sans-serif is used with correct weights.
+// ── Typography — single family (Inter), distinct weights ─────
+//
+// Letter-spacing values come from the JSX (`letterSpacing: '-0.02em'`
+// etc.). Convert: -0.02em ≈ -0.02 * sp size.
 val QuadernoTypography = Typography(
     displayLarge = TextStyle(
-        fontWeight = FontWeight.Black,
+        fontWeight = FontWeight.Black,             // 900
         fontSize = 56.sp, lineHeight = 56.sp, letterSpacing = (-2.2).sp
     ),
     displayMedium = TextStyle(
-        fontWeight = FontWeight.ExtraBold,
+        fontWeight = FontWeight.ExtraBold,         // 800
         fontSize = 38.sp, lineHeight = 38.sp, letterSpacing = (-1.5).sp
     ),
-    headlineMedium = TextStyle(
+    headlineMedium = TextStyle(                    // screen titles
         fontWeight = FontWeight.ExtraBold,
         fontSize = 28.sp, lineHeight = 32.sp, letterSpacing = (-0.7).sp
     ),
-    headlineSmall = TextStyle(
+    headlineSmall = TextStyle(                     // card titles
         fontWeight = FontWeight.ExtraBold,
         fontSize = 22.sp, lineHeight = 26.sp, letterSpacing = (-0.5).sp
     ),
-    titleLarge = TextStyle(
+    titleLarge = TextStyle(                        // phase name
         fontWeight = FontWeight.ExtraBold,
         fontSize = 18.sp, lineHeight = 22.sp, letterSpacing = (-0.4).sp
     ),
-    titleMedium = TextStyle(
-        fontWeight = FontWeight.Bold,
+    titleMedium = TextStyle(                       // section header in cards
+        fontWeight = FontWeight.Bold,              // 700
         fontSize = 14.sp, lineHeight = 20.sp, letterSpacing = 0.sp
     ),
-    titleSmall = TextStyle(
+    titleSmall = TextStyle(                        // tab label (active)
         fontWeight = FontWeight.Bold,
         fontSize = 12.5.sp, lineHeight = 16.sp, letterSpacing = 0.sp
     ),
@@ -103,14 +110,14 @@ val QuadernoTypography = Typography(
         fontSize = 16.sp, lineHeight = 22.sp
     ),
     bodyMedium = TextStyle(
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.Medium,            // 500
         fontSize = 13.sp, lineHeight = 19.sp
     ),
     bodySmall = TextStyle(
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp, lineHeight = 17.sp
     ),
-    labelLarge = TextStyle(
+    labelLarge = TextStyle(                        // CTA text
         fontWeight = FontWeight.Bold,
         fontSize = 13.sp, lineHeight = 16.sp, letterSpacing = 0.5.sp
     ),
@@ -118,55 +125,32 @@ val QuadernoTypography = Typography(
         fontWeight = FontWeight.SemiBold,
         fontSize = 11.sp, lineHeight = 14.sp, letterSpacing = 0.3.sp
     ),
-    labelSmall = TextStyle(
+    labelSmall = TextStyle(                        // kicker
         fontWeight = FontWeight.Bold,
-        fontSize = 10.5.sp, lineHeight = 14.sp, letterSpacing = 2.5.sp
+        fontSize = 10.5.sp, lineHeight = 14.sp, letterSpacing = 2.5.sp  // 0.24em ≈ 2.5sp
     ),
 )
 
-// ── Kicker style (used frequently across screens) ───────────────
-val KickerStyle = TextStyle(
-    fontWeight = FontWeight.Bold,
-    fontSize = 10.5.sp,
-    lineHeight = 14.sp,
-    letterSpacing = 2.5.sp,
-    color = QuadernoColors.Primary,
-)
-
-// ── Italic subtitle style ───────────────────────────────────────
-val ItalicSubtitleStyle = TextStyle(
-    fontWeight = FontWeight.Normal,
-    fontStyle = FontStyle.Italic,
-    fontSize = 18.sp,
-    color = QuadernoColors.Olive,
-)
-
-// ── Theme entry point ────────────────────────────────────────────
+// ── Theme entry point ────────────────────────────────────────
+//
+// Replaces PizzaLabTheme(darkTheme = false) with QuadernoTheme.
 @Composable
 fun QuadernoTheme(content: @Composable () -> Unit) {
-    val view = LocalView.current
-    if (!view.isInEditMode) {
-        SideEffect {
-            val window = (view.context as Activity).window
-            @Suppress("DEPRECATION")
-            window.statusBarColor = QuadernoColors.Paper.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
-        }
-    }
-
     MaterialTheme(
         colorScheme = QuadernoColorScheme,
         typography  = QuadernoTypography,
-        content     = content,
+        content     = content
     )
 }
 
-// ── Backward compatibility alias ────────────────────────────────
-@Composable
-fun PizzaLabTheme(
-    darkTheme: Boolean = false,
-    dynamicColor: Boolean = false,
-    content: @Composable () -> Unit
-) {
-    QuadernoTheme(content)
-}
+// ── Numeric text style — for tabular numerals (W, grams, times) ──
+//
+// Apply with .copy(fontFeatureSettings = "tnum") on any of the
+// title* / display* styles above.
+// Example:
+//   Text(
+//     "614",
+//     style = MaterialTheme.typography.headlineSmall.copy(
+//       fontFeatureSettings = "tnum"
+//     )
+//   )

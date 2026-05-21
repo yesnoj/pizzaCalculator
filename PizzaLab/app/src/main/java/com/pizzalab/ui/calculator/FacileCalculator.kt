@@ -1,76 +1,79 @@
 package com.pizzalab.ui.calculator
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.pizzalab.domain.PizzaFormulas
 import com.pizzalab.domain.RicettaFacile
+import com.pizzalab.ui.components.DashedDivider
+import com.pizzalab.ui.components.QCard
+import com.pizzalab.ui.components.QField
+import com.pizzalab.ui.components.QLeaderRow
+import com.pizzalab.ui.components.QPrimaryButton
+import com.pizzalab.ui.components.QSegmented
+import com.pizzalab.ui.theme.QuadernoColors
 import java.time.format.DateTimeFormatter
-import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
+// ── Preset lists ────────────────────────────────────────────────
+private val PRESET_PANETTI     = listOf("2", "4", "6", "8")
+private val PRESET_PESO        = listOf("180", "220", "250", "280")
+private val PRESET_ORE         = listOf("6", "8", "12", "24", "48")
+private val PRESET_IDRATAZIONE = listOf("60", "63", "65", "70")
+
+private val MODE_PANETTI = "Per Panetti"
+private val MODE_FARINA  = "Da Farina"
+
 @Composable
-fun FacileCalculator(
-    onStartProcess: () -> Unit = {},
-    modifier: Modifier = Modifier
-) {
-    var nPanetti by rememberSaveable { mutableFloatStateOf(4f) }
-    var pesoPanetto by rememberSaveable { mutableFloatStateOf(250f) }
-    var oreLievitazione by rememberSaveable { mutableIntStateOf(24) }
-    var temperatura by rememberSaveable { mutableFloatStateOf(22f) }
-    var idratazione by rememberSaveable { mutableFloatStateOf(63f) }
-    var dropdownExpanded by rememberSaveable { mutableStateOf(false) }
+fun FacileCalculator(onStartProcess: () -> Unit = {}, onModeChange: () -> Unit = {}) {
+    // ── State ──────────────────────────────────────────────────
+    var nPanetti     by rememberSaveable { mutableIntStateOf(4) }
+    var pesoPanetto  by rememberSaveable { mutableIntStateOf(250) }
+    var oreLiev      by rememberSaveable { mutableIntStateOf(24) }
+    var temperatura  by rememberSaveable { mutableIntStateOf(22) }
+    var idratazione  by rememberSaveable { mutableIntStateOf(63) }
+    var modeSelected by rememberSaveable { mutableStateOf(MODE_PANETTI) }
 
-    val oreLievOptions = listOf(1, 2, 3, 4, 6, 8, 12, 24, 48)
-
+    // ── Derived recipe ─────────────────────────────────────────
     val ricetta by remember {
         derivedStateOf {
             try {
-                if (oreLievitazione <= 6) {
+                if (oreLiev <= 6) {
                     PizzaFormulas.calcRapido(
-                        nPanetti = nPanetti.roundToInt(),
+                        nPanetti    = nPanetti,
                         pesoPanetto = pesoPanetto.toDouble(),
-                        lievOre = oreLievitazione,
-                        T = temperatura.roundToInt(),
-                        idroPct = idratazione.toDouble()
+                        lievOre     = oreLiev,
+                        T           = temperatura,
+                        idroPct     = idratazione.toDouble()
                     )
                 } else {
                     PizzaFormulas.calcFacile(
-                        nPanetti = nPanetti.roundToInt(),
+                        nPanetti    = nPanetti,
                         pesoPanetto = pesoPanetto.toDouble(),
-                        liev = oreLievitazione,
-                        T = temperatura.roundToInt(),
-                        idroPct = idratazione.toDouble()
+                        liev        = oreLiev,
+                        T           = temperatura,
+                        idroPct     = idratazione.toDouble()
                     )
                 }
             } catch (_: Exception) {
@@ -80,193 +83,173 @@ fun FacileCalculator(
     }
 
     Column(
-        modifier = modifier
-            .fillMaxWidth()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(QuadernoColors.Bg)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
-        // Numero panetti
-        SliderInput(
-            label = "Numero panetti",
-            value = nPanetti,
-            onValueChange = { nPanetti = it },
-            valueRange = 1f..12f,
-            steps = 10,
-            valueDisplay = "${nPanetti.roundToInt()}"
-        )
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // Peso panetto
-        SliderInput(
-            label = "Peso panetto",
-            value = pesoPanetto,
-            onValueChange = { pesoPanetto = it },
-            valueRange = 180f..350f,
-            steps = 16,
-            valueDisplay = "${pesoPanetto.roundToInt()} g"
-        )
-
-        // Ore lievitazione (dropdown)
-        val isRapido = oreLievitazione <= 6
-        ExposedDropdownMenuBox(
-            expanded = dropdownExpanded,
-            onExpandedChange = { dropdownExpanded = it }
-        ) {
-            OutlinedTextField(
-                value = if (isRapido) "$oreLievitazione ore (rapido)" else "$oreLievitazione ore",
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Ore lievitazione") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor()
-            )
-            ExposedDropdownMenu(
-                expanded = dropdownExpanded,
-                onDismissRequest = { dropdownExpanded = false }
-            ) {
-                oreLievOptions.forEach { ore ->
-                    val label = if (ore <= 6) "$ore ore (rapido)" else "$ore ore"
-                    DropdownMenuItem(
-                        text = { Text(label) },
-                        onClick = {
-                            oreLievitazione = ore
-                            dropdownExpanded = false
-                        }
-                    )
+        // ── Mode toggle ────────────────────────────────────────
+        QSegmented(
+            items    = listOf(MODE_PANETTI, MODE_FARINA),
+            selected = modeSelected,
+            onSelect = { item ->
+                if (item == MODE_FARINA) {
+                    onModeChange()
+                } else {
+                    modeSelected = item
                 }
-            }
-        }
-
-        // Temperatura ambiente — range più ampio in modalità rapida
-        SliderInput(
-            label = "Temperatura ambiente",
-            value = temperatura,
-            onValueChange = { temperatura = it },
-            valueRange = 18f..(if (isRapido) 35f else 30f),
-            steps = if (isRapido) 16 else 11,
-            valueDisplay = "${temperatura.roundToInt()} °C"
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 22.dp)
         )
-
-        // Idratazione — range più ampio in modalità rapida
-        SliderInput(
-            label = "Idratazione",
-            value = idratazione,
-            onValueChange = { idratazione = it },
-            valueRange = (if (isRapido) 55f else 59f)..(if (isRapido) 80f else 70f),
-            steps = if (isRapido) 24 else 10,
-            valueDisplay = "${idratazione.roundToInt()} %"
-        )
-
-        // Results
-        ricetta?.let { r ->
-            ResultCard(r)
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                onClick = onStartProcess,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Avvia Processo")
-            }
-        }
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        // ── Numero panetti ─────────────────────────────────────
+        QField(
+            label    = "Numero panetti",
+            value    = "$nPanetti",
+            onMinus  = { if (nPanetti > 1) nPanetti-- },
+            onPlus   = { if (nPanetti < 20) nPanetti++ },
+            presets  = PRESET_PANETTI,
+            selectedPreset = "$nPanetti",
+            onPresetSelect = { nPanetti = it.toIntOrNull() ?: nPanetti }
+        )
+
+        // ── Peso panetto ───────────────────────────────────────
+        QField(
+            label    = "Peso panetto",
+            value    = "$pesoPanetto",
+            suffix   = "g",
+            onMinus  = { if (pesoPanetto > 150) pesoPanetto -= 5 },
+            onPlus   = { if (pesoPanetto < 400) pesoPanetto += 5 },
+            presets  = PRESET_PESO,
+            selectedPreset = "$pesoPanetto",
+            onPresetSelect = { pesoPanetto = it.toIntOrNull() ?: pesoPanetto }
+        )
+
+        // ── Ore lievitazione ───────────────────────────────────
+        QField(
+            label    = "Ore lievitazione",
+            value    = "$oreLiev",
+            suffix   = "h",
+            hint     = if (oreLiev <= 6) "(rapido)" else null,
+            onMinus  = { if (oreLiev > 1) oreLiev-- },
+            onPlus   = { if (oreLiev < 72) oreLiev++ },
+            presets  = PRESET_ORE,
+            selectedPreset = "$oreLiev",
+            onPresetSelect = { oreLiev = it.toIntOrNull() ?: oreLiev }
+        )
+
+        // ── Temperatura ambiente ───────────────────────────────
+        QField(
+            label    = "Temperatura ambiente",
+            value    = "$temperatura",
+            suffix   = "°C",
+            onMinus  = { if (temperatura > 15) temperatura-- },
+            onPlus   = { if (temperatura < 40) temperatura++ }
+        )
+
+        // ── Idratazione ────────────────────────────────────────
+        QField(
+            label    = "Idratazione",
+            value    = "$idratazione",
+            suffix   = "%",
+            onMinus  = { if (idratazione > 50) idratazione-- },
+            onPlus   = { if (idratazione < 85) idratazione++ },
+            presets  = PRESET_IDRATAZIONE,
+            selectedPreset = "$idratazione",
+            onPresetSelect = { idratazione = it.toIntOrNull() ?: idratazione }
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // ── Result card ────────────────────────────────────────
+        ricetta?.let { r ->
+            FacileResultCard(r)
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // ── Action button ──────────────────────────────────
+            QPrimaryButton(
+                text    = "Avvia Processo",
+                onClick = onStartProcess,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 22.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
+// ── Result card ────────────────────────────────────────────────
 @Composable
-private fun ResultCard(r: RicettaFacile) {
+private fun FacileResultCard(r: RicettaFacile) {
     val timeFmt = DateTimeFormatter.ofPattern("HH:mm")
 
-    OutlinedCard(
-        modifier = Modifier.fillMaxWidth()
+    QCard(
+        kicker = "Ricetta",
+        title  = "${r.farina.toInt()} g",
+        titleSuffix = "farina"
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                "Ricetta",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
+        // Ingredienti
+        QLeaderRow("Farina",        "${r.farina.toInt()} g")
+        QLeaderRow("Acqua",         "${r.acqua.toInt()} g")
+        QLeaderRow("Sale",          "${r.sale.toInt()} g")
+        QLeaderRow("Lievito fresco","${r.ldbf} g")
+        QLeaderRow("Lievito secco", "${r.ldbs} g")
 
-            ResultRow("Farina", "${r.farina} g")
-            ResultRow("Acqua", "${r.acqua} g")
-            ResultRow("Sale", "${r.sale} g")
-            ResultRow("Lievito fresco", "${r.ldbf} g")
-            ResultRow("Lievito secco", "${r.ldbs} g")
+        DashedDivider(modifier = Modifier.padding(vertical = 6.dp))
 
-            Divider(modifier = Modifier.padding(vertical = 4.dp))
+        // Totali
+        QLeaderRow("Totale",            "${r.totale.toInt()} g", strong = true)
+        QLeaderRow("Temp. chiusura",    "${r.tempChiusura} °C")
 
-            ResultRow("Totale", "${r.totale} g")
-            ResultRow("Forza consigliata", "W${r.forza}")
-            ResultRow("Temp. chiusura", "${r.tempChiusura} °C")
+        DashedDivider(modifier = Modifier.padding(vertical = 6.dp))
 
-            Divider(modifier = Modifier.padding(vertical = 4.dp))
-
-            Text(
-                "Timeline",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            ResultRow("Puntata", PizzaFormulas.fmtMinutes(r.puntataMin))
-            if (r.frigoMin > 0) {
-                ResultRow("Frigo", PizzaFormulas.fmtMinutes(r.frigoMin))
-            }
-            ResultRow("Appretto", PizzaFormulas.fmtMinutes(r.aprettoMin))
-            ResultRow("Inizio appretto", r.inizioApretto.format(timeFmt))
-            ResultRow("Pronti", r.pronti.format(timeFmt))
+        // Timeline
+        QLeaderRow("Puntata",           PizzaFormulas.fmtMinutes(r.puntataMin))
+        if (r.frigoMin > 0) {
+            QLeaderRow("Frigo",         PizzaFormulas.fmtMinutes(r.frigoMin))
         }
-    }
-}
+        QLeaderRow("Appretto",          PizzaFormulas.fmtMinutes(r.aprettoMin))
+        QLeaderRow("Inizio appretto",   r.inizioApretto.format(timeFmt))
 
-@Composable
-internal fun ResultRow(label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(label, style = MaterialTheme.typography.bodyMedium)
+        DashedDivider(modifier = Modifier.padding(vertical = 6.dp))
+
+        // Footer summary
         Text(
-            value,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold
+            text = "W consigliata  W${r.forza}",
+            style = TextStyle(
+                fontSize   = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontStyle  = FontStyle.Italic,
+                color      = QuadernoColors.Olive,
+            ),
+            modifier = Modifier.padding(bottom = 4.dp)
         )
-    }
-}
-
-@Composable
-internal fun SliderInput(
-    label: String,
-    value: Float,
-    onValueChange: (Float) -> Unit,
-    valueRange: ClosedFloatingPointRange<Float>,
-    steps: Int,
-    valueDisplay: String,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(label, style = MaterialTheme.typography.bodyMedium)
-            Text(
-                valueDisplay,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold
+        Text(
+            text  = "pronti alle",
+            style = TextStyle(
+                fontSize   = 11.sp,
+                fontWeight = FontWeight.Medium,
+                color      = QuadernoColors.Ink2,
             )
-        }
-        Slider(
-            value = value,
-            onValueChange = onValueChange,
-            valueRange = valueRange,
-            steps = steps,
-            modifier = Modifier.fillMaxWidth()
+        )
+        Text(
+            text  = r.pronti.format(timeFmt),
+            style = TextStyle(
+                fontSize      = 38.sp,
+                fontWeight    = FontWeight.ExtraBold,
+                color         = QuadernoColors.Primary,
+                letterSpacing = (-1.5).sp,
+            )
         )
     }
 }

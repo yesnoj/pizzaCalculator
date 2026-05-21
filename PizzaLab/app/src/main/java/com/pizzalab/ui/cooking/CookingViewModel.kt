@@ -45,17 +45,22 @@ class CookingViewModel : ViewModel() {
     }
 
     /**
-     * Add a new timer for the given preset and start it immediately.
+     * Start a timer for the given preset.
+     * Only one timer can be active at a time — any existing timer is replaced.
      */
     fun addTimer(preset: CookingPreset) {
-        val nextNumber = _timers.value.size + _pizzeCount.value + 1
+        // Stop and remove all existing timers
+        timerJobs.values.forEach { it.cancel() }
+        timerJobs.clear()
+
+        val nextNumber = _pizzeCount.value + 1
         val timer = CookingTimer(
             preset = preset,
             remainingSeconds = preset.durationSeconds,
             isRunning = true,
             pizzaNumber = nextNumber
         )
-        _timers.update { it + timer }
+        _timers.value = listOf(timer)
         startCountdown(timer.id)
     }
 

@@ -1,101 +1,91 @@
 package com.pizzalab.ui.calculator
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.pizzalab.domain.PizzaFormulas
 import com.pizzalab.domain.RicettaFacile
+import com.pizzalab.ui.components.DashedDivider
+import com.pizzalab.ui.components.QCard
+import com.pizzalab.ui.components.QField
+import com.pizzalab.ui.components.QLeaderRow
+import com.pizzalab.ui.components.QPrimaryButton
+import com.pizzalab.ui.components.QSegmented
+import com.pizzalab.ui.theme.QuadernoColors
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DaFarinaCalculator(
-    onStartProcess: () -> Unit = {},
-    modifier: Modifier = Modifier
-) {
-    var farinaInput by rememberSaveable { mutableFloatStateOf(500f) }
+fun DaFarinaCalculator(onStartProcess: () -> Unit = {}, onModeChange: () -> Unit = {}) {
+    // ── State ───────────────────────────────────────────────────
+    var farina by rememberSaveable { mutableIntStateOf(500) }
     var oreLievitazione by rememberSaveable { mutableIntStateOf(24) }
-    var temperatura by rememberSaveable { mutableFloatStateOf(22f) }
-    var idratazione by rememberSaveable { mutableFloatStateOf(63f) }
-    var dropdownExpanded by rememberSaveable { mutableStateOf(false) }
+    var temperatura by rememberSaveable { mutableIntStateOf(22) }
+    var idratazione by rememberSaveable { mutableIntStateOf(63) }
 
-    // Scelta panetti: true = fisso peso, false = fisso numero
-    var scegliPeso by rememberSaveable { mutableStateOf(true) }
-    var pesoPanetto by rememberSaveable { mutableFloatStateOf(250f) }
-    var nPanetti by rememberSaveable { mutableFloatStateOf(4f) }
+    // Scelta panetti: "Fisso peso" / "Fisso numero"
+    var subMode by rememberSaveable { mutableStateOf("Fisso peso") }
+    var pesoPanetto by rememberSaveable { mutableIntStateOf(250) }
+    var nPanetti by rememberSaveable { mutableIntStateOf(4) }
 
-    val oreLievOptions = listOf(1, 2, 3, 4, 6, 8, 12, 24, 48)
     val isRapido = oreLievitazione <= 6
 
-    // Calcolo totale impasto dalla farina (per limiti slider e info panetti)
+    // ── Derived: totale impasto ─────────────────────────────────
     val totaleImpasto by remember {
         derivedStateOf {
             try {
                 PizzaFormulas.totaleDaFarina(
-                    farinaG = farinaInput.toDouble(),
+                    farinaG = farina.toDouble(),
                     idroPct = idratazione.toDouble(),
                     lievOre = oreLievitazione,
-                    T = temperatura.roundToInt()
+                    T = temperatura
                 )
             } catch (_: Exception) {
-                farinaInput.toDouble() * 1.65
+                farina.toDouble() * 1.65
             }
         }
     }
 
-    // Limiti dinamici
+    // ── Derived: limits ─────────────────────────────────────────
     val maxPesoPanetto by remember {
-        derivedStateOf { totaleImpasto.toFloat().coerceIn(180f, 500f) }
+        derivedStateOf { totaleImpasto.toInt().coerceIn(181, 500) }
     }
     val maxNPanetti by remember {
-        derivedStateOf { (totaleImpasto / 180.0).toInt().coerceIn(1, 20).toFloat() }
+        derivedStateOf { (totaleImpasto / 180.0).toInt().coerceIn(1, 20) }
     }
 
-    // Clamp se limiti cambiano
-    val effPeso = pesoPanetto.coerceIn(180f, maxPesoPanetto)
-    if (effPeso != pesoPanetto) pesoPanetto = effPeso
-    val effN = nPanetti.coerceIn(1f, maxNPanetti)
-    if (effN != nPanetti) nPanetti = effN
+    // Clamp when limits change
+    if (pesoPanetto > maxPesoPanetto) pesoPanetto = maxPesoPanetto
+    if (pesoPanetto < 180) pesoPanetto = 180
+    if (nPanetti > maxNPanetti) nPanetti = maxNPanetti
+    if (nPanetti < 1) nPanetti = 1
 
-    // Info panetti calcolati
+    // ── Derived: panetti info ───────────────────────────────────
     val panettiInfo by remember {
         derivedStateOf {
             try {
-                if (scegliPeso) {
+                if (subMode == "Fisso peso") {
                     val n = (totaleImpasto / pesoPanetto).roundToInt().coerceAtLeast(1)
                     Pair(n, pesoPanetto.toDouble())
                 } else {
-                    val n = nPanetti.roundToInt().coerceAtLeast(1)
+                    val n = nPanetti.coerceAtLeast(1)
                     val peso = totaleImpasto / n
                     Pair(n, peso)
                 }
@@ -105,15 +95,15 @@ fun DaFarinaCalculator(
         }
     }
 
-    // Ricetta calcolata direttamente dalla farina
+    // ── Derived: recipe ─────────────────────────────────────────
     val ricetta by remember {
         derivedStateOf {
             try {
                 PizzaFormulas.calcDaFarina(
-                    farinaG = farinaInput.toDouble(),
+                    farinaG = farina.toDouble(),
                     idroPct = idratazione.toDouble(),
                     lievOre = oreLievitazione,
-                    T = temperatura.roundToInt()
+                    T = temperatura
                 )
             } catch (_: Exception) {
                 null
@@ -121,139 +111,151 @@ fun DaFarinaCalculator(
         }
     }
 
+    // ── Temperature and hydration bounds (depend on isRapido) ───
+    val tempMax = if (isRapido) 35 else 30
+    val idrMin = if (isRapido) 55 else 59
+    val idrMax = if (isRapido) 80 else 70
+
+    // Clamp when mode changes
+    if (temperatura > tempMax) temperatura = tempMax
+    if (idratazione < idrMin) idratazione = idrMin
+    if (idratazione > idrMax) idratazione = idrMax
+
+    // ── Ore presets ─────────────────────────────────────────────
+    val orePresets = listOf("6", "8", "12", "24", "48")
+
+    // ── UI ──────────────────────────────────────────────────────
     Column(
-        modifier = modifier
-            .fillMaxWidth()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(QuadernoColors.Bg)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
-        // Farina
-        SliderInput(
-            label = "Farina",
-            value = farinaInput,
-            onValueChange = { farinaInput = it },
-            valueRange = 200f..2000f,
-            steps = 35,
-            valueDisplay = "${farinaInput.roundToInt()} g"
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Mode toggle: Per Panetti / Da Farina
+        QSegmented(
+            items = listOf("Per Panetti", "Da Farina"),
+            selected = "Da Farina",
+            onSelect = { if (it == "Per Panetti") onModeChange() },
+            modifier = Modifier.padding(horizontal = 22.dp, vertical = 8.dp)
         )
 
-        // Scelta: fisso peso o fisso numero
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            FilterChip(
-                selected = scegliPeso,
-                onClick = { scegliPeso = true },
-                label = { Text("Fisso peso") },
-                modifier = Modifier.weight(1f)
-            )
-            FilterChip(
-                selected = !scegliPeso,
-                onClick = { scegliPeso = false },
-                label = { Text("Fisso numero") },
-                modifier = Modifier.weight(1f)
-            )
-        }
+        // Sub-mode toggle: Fisso peso / Fisso numero
+        QSegmented(
+            items = listOf("Fisso peso", "Fisso numero"),
+            selected = subMode,
+            onSelect = { subMode = it },
+            modifier = Modifier.padding(horizontal = 22.dp, vertical = 4.dp)
+        )
 
-        if (scegliPeso) {
-            val pesoMax = maxPesoPanetto.coerceAtLeast(181f)
-            val pesoSteps = ((pesoMax - 180f) / 10f).toInt().coerceAtLeast(1)
-            SliderInput(
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // ── Farina ──────────────────────────────────────────────
+        QField(
+            label = "Farina",
+            value = farina.toString(),
+            suffix = "g",
+            onMinus = { if (farina > 200) farina = (farina - 50).coerceAtLeast(200) },
+            onPlus = { farina = (farina + 50).coerceAtMost(2000) },
+            presets = listOf("300", "500", "1000", "1500"),
+            selectedPreset = if (farina in listOf(300, 500, 1000, 1500)) farina.toString() else null,
+            onPresetSelect = { farina = it.toInt() }
+        )
+
+        // ── Peso panetto or Numero panetti ───────────────────────
+        if (subMode == "Fisso peso") {
+            QField(
                 label = "Peso panetto",
-                value = pesoPanetto.coerceIn(180f, pesoMax),
-                onValueChange = { pesoPanetto = it },
-                valueRange = 180f..pesoMax,
-                steps = pesoSteps,
-                valueDisplay = "${pesoPanetto.coerceIn(180f, pesoMax).roundToInt()} g"
+                value = pesoPanetto.toString(),
+                suffix = "g",
+                onMinus = { if (pesoPanetto > 180) pesoPanetto = (pesoPanetto - 10).coerceAtLeast(180) },
+                onPlus = { pesoPanetto = (pesoPanetto + 10).coerceAtMost(maxPesoPanetto) },
+                presets = listOf("180", "220", "250", "280"),
+                selectedPreset = if (pesoPanetto in listOf(180, 220, 250, 280)) pesoPanetto.toString() else null,
+                onPresetSelect = { pesoPanetto = it.toInt().coerceIn(180, maxPesoPanetto) }
             )
             panettiInfo?.let { (n, _) ->
-                ResultRow("Panetti risultanti", "$n")
+                QField(
+                    label = "Panetti risultanti",
+                    value = n.toString(),
+                    onMinus = {},
+                    onPlus = {},
+                    dense = true
+                )
             }
         } else {
-            val nMax = maxNPanetti.coerceAtLeast(2f)
-            // steps = numero di stop INTERMEDI tra min e max.
-            // Per valori interi da 1 a nMax servono (nMax - 1 - 1) stop intermedi.
-            // Es: range 1..4 → steps=2 → posizioni 1,2,3,4
-            val nSteps = (nMax.toInt() - 2).coerceAtLeast(0)
-            SliderInput(
+            QField(
                 label = "Numero panetti",
-                value = nPanetti.coerceIn(1f, nMax),
-                onValueChange = { nPanetti = it },
-                valueRange = 1f..nMax,
-                steps = nSteps,
-                valueDisplay = "${nPanetti.coerceIn(1f, nMax).roundToInt()}"
+                value = nPanetti.toString(),
+                onMinus = { if (nPanetti > 1) nPanetti-- },
+                onPlus = { nPanetti = (nPanetti + 1).coerceAtMost(maxNPanetti) },
             )
             panettiInfo?.let { (_, peso) ->
-                ResultRow("Peso panetto", "${peso.roundToInt()} g")
+                QField(
+                    label = "Peso panetto",
+                    value = peso.roundToInt().toString(),
+                    suffix = "g",
+                    onMinus = {},
+                    onPlus = {},
+                    dense = true
+                )
             }
         }
 
-        // Ore lievitazione
-        ExposedDropdownMenuBox(
-            expanded = dropdownExpanded,
-            onExpandedChange = { dropdownExpanded = it }
-        ) {
-            OutlinedTextField(
-                value = if (isRapido) "$oreLievitazione ore (rapido)" else "$oreLievitazione ore",
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Ore lievitazione") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor()
-            )
-            ExposedDropdownMenu(
-                expanded = dropdownExpanded,
-                onDismissRequest = { dropdownExpanded = false }
-            ) {
-                oreLievOptions.forEach { ore ->
-                    val label = if (ore <= 6) "$ore ore (rapido)" else "$ore ore"
-                    DropdownMenuItem(
-                        text = { Text(label) },
-                        onClick = {
-                            oreLievitazione = ore
-                            dropdownExpanded = false
-                        }
-                    )
-                }
-            }
-        }
-
-        // Temperatura ambiente
-        SliderInput(
-            label = "Temperatura ambiente",
-            value = temperatura,
-            onValueChange = { temperatura = it },
-            valueRange = 18f..(if (isRapido) 35f else 30f),
-            steps = if (isRapido) 16 else 11,
-            valueDisplay = "${temperatura.roundToInt()} °C"
+        // ── Ore lievitazione ────────────────────────────────────
+        QField(
+            label = "Ore lievitazione",
+            value = oreLievitazione.toString(),
+            suffix = if (isRapido) "ore (rapido)" else "ore",
+            onMinus = {
+                val opts = listOf(6, 8, 12, 24, 48)
+                val idx = opts.indexOf(oreLievitazione)
+                if (idx > 0) oreLievitazione = opts[idx - 1]
+            },
+            onPlus = {
+                val opts = listOf(6, 8, 12, 24, 48)
+                val idx = opts.indexOf(oreLievitazione)
+                if (idx < opts.lastIndex) oreLievitazione = opts[idx + 1]
+            },
+            presets = orePresets,
+            selectedPreset = if (oreLievitazione in listOf(6, 8, 12, 24, 48)) oreLievitazione.toString() else null,
+            onPresetSelect = { oreLievitazione = it.toInt() }
         )
 
-        // Idratazione
-        SliderInput(
+        // ── Temperatura ambiente ─────────────────────────────────
+        QField(
+            label = "Temperatura",
+            value = temperatura.toString(),
+            suffix = "°C",
+            onMinus = { if (temperatura > 18) temperatura-- },
+            onPlus = { if (temperatura < tempMax) temperatura++ }
+        )
+
+        // ── Idratazione ──────────────────────────────────────────
+        QField(
             label = "Idratazione",
-            value = idratazione,
-            onValueChange = { idratazione = it },
-            valueRange = (if (isRapido) 55f else 59f)..(if (isRapido) 80f else 70f),
-            steps = if (isRapido) 24 else 10,
-            valueDisplay = "${idratazione.roundToInt()} %"
+            value = idratazione.toString(),
+            suffix = "%",
+            onMinus = { if (idratazione > idrMin) idratazione-- },
+            onPlus = { if (idratazione < idrMax) idratazione++ }
         )
 
-        // Risultati
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // ── Result card + CTA ────────────────────────────────────
         ricetta?.let { r ->
             DaFarinaResultCard(r, panettiInfo)
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(
+
+            QPrimaryButton(
+                text = "Avvia Processo",
                 onClick = onStartProcess,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Avvia Processo")
-            }
+                modifier = Modifier.padding(horizontal = 22.dp, vertical = 8.dp)
+            )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
@@ -261,51 +263,36 @@ fun DaFarinaCalculator(
 private fun DaFarinaResultCard(r: RicettaFacile, panettiInfo: Pair<Int, Double>?) {
     val timeFmt = DateTimeFormatter.ofPattern("HH:mm")
 
-    OutlinedCard(
-        modifier = Modifier.fillMaxWidth()
+    QCard(
+        kicker = "Ricetta",
+        title = panettiInfo?.let { (n, peso) -> "$n × ${peso.roundToInt()} g" }
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                "Ricetta",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            panettiInfo?.let { (n, peso) ->
-                ResultRow("Panetti", "$n × ${peso.roundToInt()} g")
-                Divider(modifier = Modifier.padding(vertical = 4.dp))
-            }
-
-            ResultRow("Farina", "${r.farina} g")
-            ResultRow("Acqua", "${r.acqua} g")
-            ResultRow("Sale", "${r.sale} g")
-            ResultRow("Lievito fresco", "${r.ldbf} g")
-            ResultRow("Lievito secco", "${r.ldbs} g")
-
-            Divider(modifier = Modifier.padding(vertical = 4.dp))
-
-            ResultRow("Totale", "${r.totale} g")
-            ResultRow("Forza consigliata", "W${r.forza}")
-            ResultRow("Temp. chiusura", "${r.tempChiusura} °C")
-
-            Divider(modifier = Modifier.padding(vertical = 4.dp))
-
-            Text(
-                "Timeline",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            ResultRow("Puntata", PizzaFormulas.fmtMinutes(r.puntataMin))
-            if (r.frigoMin > 0) {
-                ResultRow("Frigo", PizzaFormulas.fmtMinutes(r.frigoMin))
-            }
-            ResultRow("Appretto", PizzaFormulas.fmtMinutes(r.aprettoMin))
-            ResultRow("Inizio appretto", r.inizioApretto.format(timeFmt))
-            ResultRow("Pronti", r.pronti.format(timeFmt))
+        // ── Ingredienti ──────────────────────────────────────────
+        panettiInfo?.let {
+            DashedDivider(modifier = Modifier.padding(vertical = 6.dp))
         }
+
+        QLeaderRow(label = "Farina", value = "${r.farina} g")
+        QLeaderRow(label = "Acqua", value = "${r.acqua} g")
+        QLeaderRow(label = "Sale", value = "${r.sale} g")
+        QLeaderRow(label = "Lievito fresco", value = "${r.ldbf} g")
+        QLeaderRow(label = "Lievito secco", value = "${r.ldbs} g")
+
+        DashedDivider(modifier = Modifier.padding(vertical = 6.dp))
+
+        QLeaderRow(label = "Totale", value = "${r.totale} g", strong = true)
+        QLeaderRow(label = "Forza consigliata", value = "W${r.forza}")
+        QLeaderRow(label = "Temp. chiusura", value = "${r.tempChiusura} °C")
+
+        DashedDivider(modifier = Modifier.padding(vertical = 6.dp))
+
+        // ── Timeline ─────────────────────────────────────────────
+        QLeaderRow(label = "Puntata", value = PizzaFormulas.fmtMinutes(r.puntataMin))
+        if (r.frigoMin > 0) {
+            QLeaderRow(label = "Frigo", value = PizzaFormulas.fmtMinutes(r.frigoMin))
+        }
+        QLeaderRow(label = "Appretto", value = PizzaFormulas.fmtMinutes(r.aprettoMin))
+        QLeaderRow(label = "Inizio appretto", value = r.inizioApretto.format(timeFmt))
+        QLeaderRow(label = "Pronti", value = r.pronti.format(timeFmt), strong = true)
     }
 }

@@ -1,5 +1,6 @@
 package com.pizzalab.ui.calculator
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,9 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -19,17 +17,23 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.pizzalab.domain.PizzaFormulas
 import com.pizzalab.domain.RicettaPro
+import com.pizzalab.ui.components.QCard
+import com.pizzalab.ui.components.QField
+import com.pizzalab.ui.components.QLeaderRow
+import com.pizzalab.ui.theme.QuadernoColors
 import kotlin.math.roundToInt
 
 @Composable
-fun ProCalculator(
-    modifier: Modifier = Modifier
-) {
+fun ProCalculator() {
     var nPanetti by rememberSaveable { mutableFloatStateOf(4f) }
     var pesoPanetto by rememberSaveable { mutableFloatStateOf(250f) }
     var idratazione by rememberSaveable { mutableFloatStateOf(63f) }
@@ -57,91 +61,103 @@ fun ProCalculator(
     }
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
+            .background(QuadernoColors.Bg)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
-        Text(
-            text = "Calcolatore PRO",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
-
         // Numero panetti
-        SliderInput(
+        QField(
             label = "Numero panetti",
-            value = nPanetti,
-            onValueChange = { nPanetti = it },
-            valueRange = 1f..20f,
-            steps = 18,
-            valueDisplay = "${nPanetti.roundToInt()}"
+            value = "${nPanetti.roundToInt()}",
+            onMinus = { if (nPanetti > 1f) nPanetti -= 1f },
+            onPlus = { if (nPanetti < 20f) nPanetti += 1f },
+            dense = true
         )
 
         // Peso panetto
-        SliderInput(
+        QField(
             label = "Peso panetto",
-            value = pesoPanetto,
-            onValueChange = { pesoPanetto = it },
-            valueRange = 150f..500f,
-            steps = 34,
-            valueDisplay = "${pesoPanetto.roundToInt()} g"
+            value = "${pesoPanetto.roundToInt()}",
+            suffix = "g",
+            onMinus = { if (pesoPanetto > 150f) pesoPanetto -= 10f },
+            onPlus = { if (pesoPanetto < 500f) pesoPanetto += 10f },
+            dense = true
         )
 
-        // Idratazione
-        SliderInput(
+        // Idratazione % farina
+        QField(
             label = "Idratazione % farina",
-            value = idratazione,
-            onValueChange = { idratazione = it },
-            valueRange = 50f..85f,
-            steps = 34,
-            valueDisplay = "${idratazione.roundToInt()} %"
+            value = "${idratazione.roundToInt()}",
+            suffix = "%",
+            onMinus = { if (idratazione > 50f) idratazione -= 1f },
+            onPlus = { if (idratazione < 85f) idratazione += 1f },
+            dense = true
         )
 
         // Sale % farina
-        SliderInput(
+        QField(
             label = "Sale % farina",
-            value = salePctFarina,
-            onValueChange = { salePctFarina = it },
-            valueRange = 0f..5f,
-            steps = 49,
-            valueDisplay = "${"%.1f".format(salePctFarina)} %"
+            value = "${"%.1f".format(salePctFarina)}",
+            suffix = "%",
+            onMinus = { if (salePctFarina > 0f) salePctFarina = (salePctFarina - 0.1f).coerceAtLeast(0f) },
+            onPlus = { if (salePctFarina < 5f) salePctFarina = (salePctFarina + 0.1f).coerceAtMost(5f) },
+            dense = true
         )
 
         // Grassi % farina
-        SliderInput(
+        QField(
             label = "Grassi % farina",
-            value = grassiPctFarina,
-            onValueChange = { grassiPctFarina = it },
-            valueRange = 0f..5f,
-            steps = 49,
-            valueDisplay = "${"%.1f".format(grassiPctFarina)} %"
+            value = "${"%.1f".format(grassiPctFarina)}",
+            suffix = "%",
+            onMinus = { if (grassiPctFarina > 0f) grassiPctFarina = (grassiPctFarina - 0.1f).coerceAtLeast(0f) },
+            onPlus = { if (grassiPctFarina < 5f) grassiPctFarina = (grassiPctFarina + 0.1f).coerceAtMost(5f) },
+            dense = true
         )
 
         // Lievito % farina
-        SliderInput(
+        QField(
             label = "Lievito % farina",
-            value = lievitoPctFarina,
-            onValueChange = { lievitoPctFarina = it },
-            valueRange = 0f..2f,
-            steps = 39,
-            valueDisplay = "${"%.2f".format(lievitoPctFarina)} %"
+            value = "${"%.2f".format(lievitoPctFarina)}",
+            suffix = "%",
+            onMinus = { if (lievitoPctFarina > 0f) lievitoPctFarina = (lievitoPctFarina - 0.05f).coerceAtLeast(0f) },
+            onPlus = { if (lievitoPctFarina < 2f) lievitoPctFarina = (lievitoPctFarina + 0.05f).coerceAtMost(2f) },
+            dense = true
         )
 
         // Malto % farina
-        SliderInput(
+        QField(
             label = "Malto % farina",
-            value = maltoPctFarina,
-            onValueChange = { maltoPctFarina = it },
-            valueRange = 0f..3f,
-            steps = 29,
-            valueDisplay = "${"%.1f".format(maltoPctFarina)} %"
+            value = "${"%.1f".format(maltoPctFarina)}",
+            suffix = "%",
+            onMinus = { if (maltoPctFarina > 0f) maltoPctFarina = (maltoPctFarina - 0.1f).coerceAtLeast(0f) },
+            onPlus = { if (maltoPctFarina < 3f) maltoPctFarina = (maltoPctFarina + 0.1f).coerceAtMost(3f) },
+            dense = true
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Results
         ricetta?.let { r ->
             ProResultCard(r)
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // No process button — Pro mode: user manages timing
+        Text(
+            text = "nessuna timeline · gestisci tu tempi e fasi",
+            style = TextStyle(
+                fontSize = 12.sp,
+                fontStyle = FontStyle.Italic,
+                color = QuadernoColors.Ink3,
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 22.dp, vertical = 4.dp),
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
     }
@@ -149,30 +165,17 @@ fun ProCalculator(
 
 @Composable
 private fun ProResultCard(r: RicettaPro) {
-    OutlinedCard(
-        modifier = Modifier.fillMaxWidth()
+    QCard(
+        kicker = "Ricetta",
+        title = "Ingredienti"
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                "Ricetta",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            ResultRow("Farina", "${r.farina} g")
-            ResultRow("Acqua", "${r.acqua} g")
-            ResultRow("Sale", "${r.sale} g")
-            ResultRow("Olio", "${r.olio} g")
-            ResultRow("Malto", "${r.malto} g")
-            ResultRow("Lievito fresco", "${r.ldbf} g")
-            ResultRow("Lievito secco", "${r.ldbs} g")
-
-            Divider(modifier = Modifier.padding(vertical = 4.dp))
-
-            ResultRow("Totale", "${r.totale} g")
-        }
+        QLeaderRow("Farina", "${r.farina}", unit = "g")
+        QLeaderRow("Acqua", "${r.acqua}", unit = "g")
+        QLeaderRow("Sale", "${r.sale}", unit = "g")
+        QLeaderRow("Olio", "${r.olio}", unit = "g")
+        QLeaderRow("Malto", "${r.malto}", unit = "g")
+        QLeaderRow("Lievito fresco", "${r.ldbf}", unit = "g")
+        QLeaderRow("Lievito secco", "${r.ldbs}", unit = "g")
+        QLeaderRow("Totale", "${r.totale}", unit = "g", strong = true)
     }
 }

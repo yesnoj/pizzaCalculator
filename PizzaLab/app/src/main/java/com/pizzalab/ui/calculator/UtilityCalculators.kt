@@ -1,339 +1,140 @@
 package com.pizzalab.ui.calculator
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Whatshot
-import androidx.compose.material.icons.filled.TipsAndUpdates
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.pizzalab.domain.PizzaFormulas
+import com.pizzalab.ui.components.DashedDivider
+import com.pizzalab.ui.components.QCard
+import com.pizzalab.ui.components.QChipRow
+import com.pizzalab.ui.components.QField
+import com.pizzalab.ui.components.QLeaderRow
+import com.pizzalab.ui.theme.QuadernoColors
 import kotlin.math.roundToInt
-
-// ============================================================
-// MIX FARINE
-// ============================================================
-
-@Composable
-fun MixFarineCalculator(modifier: Modifier = Modifier) {
-    var totaleG by rememberSaveable { mutableStateOf("1000") }
-    var w1 by rememberSaveable { mutableStateOf("200") }
-    var w2 by rememberSaveable { mutableStateOf("350") }
-    var wMix by rememberSaveable { mutableStateOf("280") }
-
-    val result by remember {
-        derivedStateOf {
-            try {
-                val tg = totaleG.toDoubleOrNull() ?: return@derivedStateOf null
-                val v1 = w1.toDoubleOrNull() ?: return@derivedStateOf null
-                val v2 = w2.toDoubleOrNull() ?: return@derivedStateOf null
-                val vm = wMix.toDoubleOrNull() ?: return@derivedStateOf null
-                PizzaFormulas.mixFarine(tg, v1, v2, vm)
-            } catch (_: Exception) {
-                null
-            }
-        }
-    }
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text(
-            "Mix Farine",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
-
-        OutlinedTextField(
-            value = totaleG,
-            onValueChange = { totaleG = it },
-            label = { Text("Farina totale (g)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = w1,
-            onValueChange = { w1 = it },
-            label = { Text("W farina 1") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = w2,
-            onValueChange = { w2 = it },
-            label = { Text("W farina 2") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = wMix,
-            onValueChange = { wMix = it },
-            label = { Text("W desiderato") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        result?.let { (f1, f2) ->
-            OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        "Risultato",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    ResultRow("Farina 1 (W${w1})", "$f1 g")
-                    ResultRow("Farina 2 (W${w2})", "$f2 g")
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-    }
-}
 
 // ============================================================
 // FORZA DA PROTEINE
 // ============================================================
 
 @Composable
-fun ForzaProteineCalculator(modifier: Modifier = Modifier) {
-    var proteine by rememberSaveable { mutableFloatStateOf(12f) }
+fun ForzaProteineCalculator() {
+    var proteineStr by rememberSaveable { mutableStateOf("12.0") }
+
+    val proteineVal = proteineStr.toDoubleOrNull() ?: 12.0
 
     val forza by remember {
         derivedStateOf {
             try {
-                PizzaFormulas.forzaDaProteine(proteine.toDouble())
+                PizzaFormulas.forzaDaProteine(proteineStr.toDoubleOrNull() ?: 12.0)
             } catch (_: Exception) {
                 null
             }
         }
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text(
-            "W da Proteine",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
+    val wDescription: String = forza?.let { w ->
+        when {
+            w < 130  -> "Farina debolissima — solo pasta fresca o grissini"
+            w < 200  -> "Farina debole — focaccia, pane rustico, teglie veloci"
+            w < 280  -> "Farina media — pane comune, pizza con maturazione breve"
+            w < 360  -> "Farina forte — pizza napoletana, biga, poolish"
+            else     -> "Farina molto forte — grandi lievitazioni, brioche, panettone"
+        }
+    } ?: ""
 
-        SliderInput(
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(QuadernoColors.Bg)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(0.dp)
+    ) {
+        // Header
+        Column(modifier = Modifier.padding(horizontal = 22.dp, vertical = 16.dp)) {
+            Text(
+                text = "W DA PROTEINE",
+                style = MaterialTheme.typography.labelSmall,
+                color = QuadernoColors.Primary,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = "Forza da Proteine",
+                style = MaterialTheme.typography.headlineSmall,
+                color = QuadernoColors.Ink,
+            )
+        }
+
+        DashedDivider()
+
+        QField(
             label = "Proteine",
-            value = proteine,
-            onValueChange = { proteine = it },
-            valueRange = 7f..17f,
-            steps = 99,
-            valueDisplay = "${"%.1f".format(proteine)} %"
+            value = "%.1f".format(proteineVal),
+            suffix = "%",
+            onMinus = {
+                val current = proteineStr.toDoubleOrNull() ?: 12.0
+                val next = (current - 0.1).coerceIn(7.0, 17.0)
+                proteineStr = "%.1f".format(next)
+            },
+            onPlus = {
+                val current = proteineStr.toDoubleOrNull() ?: 12.0
+                val next = (current + 0.1).coerceIn(7.0, 17.0)
+                proteineStr = "%.1f".format(next)
+            },
+            hint = "(7.0 – 17.0)",
         )
 
         forza?.let { w ->
-            OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        "Risultato",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    ResultRow("Forza stimata", "W$w")
-                }
+            QCard(
+                kicker = "W stimato",
+                title = "W $w",
+                accent = QuadernoColors.Olive,
+            ) {
+                // no inner rows needed — description is below the card
+            }
+
+            if (wDescription.isNotEmpty()) {
+                Text(
+                    text = wDescription,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = QuadernoColors.Ink2,
+                    modifier = Modifier.padding(horizontal = 22.dp, vertical = 4.dp),
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-    }
-}
-
-// ============================================================
-// CONTENITORE
-// ============================================================
-
-@Composable
-fun ContenitoreCalculator(modifier: Modifier = Modifier) {
-    var pesoImpasto by rememberSaveable { mutableStateOf("1000") }
-
-    val volume by remember {
-        derivedStateOf {
-            val peso = pesoImpasto.toDoubleOrNull() ?: return@derivedStateOf null
-            if (peso <= 0) return@derivedStateOf null
-            PizzaFormulas.contenitoreVolumeMl(peso)
-        }
-    }
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
         Text(
-            "Contenitore",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
+            text = "formula: W ≈ proteine × 27.5 − 60",
+            style = TextStyle(
+                fontSize = 11.sp,
+                fontStyle = FontStyle.Italic,
+                color = QuadernoColors.Ink3,
+            ),
+            modifier = Modifier.padding(horizontal = 22.dp, vertical = 8.dp),
         )
 
-        OutlinedTextField(
-            value = pesoImpasto,
-            onValueChange = { pesoImpasto = it },
-            label = { Text("Peso impasto (g)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        volume?.let { v ->
-            OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        "Risultato",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    ResultRow("Volume consigliato", "$v ml")
-                    ResultRow("", "${"%.1f".format(v / 1000.0)} L")
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-    }
-}
-
-// ============================================================
-// CONVERSIONE LIEVITO
-// ============================================================
-
-@Composable
-fun ConversioneLievitoCalculator(modifier: Modifier = Modifier) {
-    var lievitoFresco by rememberSaveable { mutableStateOf("3") }
-    var farina by rememberSaveable { mutableStateOf("600") }
-    var acqua by rememberSaveable { mutableStateOf("380") }
-
-    val result by remember {
-        derivedStateOf {
-            try {
-                val l = lievitoFresco.toDoubleOrNull() ?: return@derivedStateOf null
-                val f = farina.toDoubleOrNull() ?: return@derivedStateOf null
-                val a = acqua.toDoubleOrNull() ?: return@derivedStateOf null
-                if (l <= 0 || f <= 0 || a <= 0) return@derivedStateOf null
-                PizzaFormulas.conversioneLievito(l, f, a)
-            } catch (_: Exception) {
-                null
-            }
-        }
-    }
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text(
-            "Conversione Lievito",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
-
-        OutlinedTextField(
-            value = lievitoFresco,
-            onValueChange = { lievitoFresco = it },
-            label = { Text("Lievito di birra fresco (g)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = farina,
-            onValueChange = { farina = it },
-            label = { Text("Farina ricetta (g)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = acqua,
-            onValueChange = { acqua = it },
-            label = { Text("Acqua ricetta (g)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        result?.let { c ->
-            OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        "Risultato",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    ResultRow("LDB fresco", "${c.ldbfInput} g")
-                    ResultRow("LDB secco attivo", "${c.ldbs} g")
-                    ResultRow("LDB secco Caputo", "${c.ldbc} g")
-
-                    Divider(modifier = Modifier.padding(vertical = 4.dp))
-
-                    Text(
-                        "Lievito Madre Solido",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    ResultRow("Lievito madre", "${c.lm} g")
-                    ResultRow("Farina (corretta)", "${c.farinaLm} g")
-                    ResultRow("Acqua (corretta)", "${c.acquaLm} g")
-
-                    Divider(modifier = Modifier.padding(vertical = 4.dp))
-
-                    Text(
-                        "Li.Co.Li (idro 100%)",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    ResultRow("Li.Co.Li", "${c.licoli} g")
-                    ResultRow("Farina (corretta)", "${c.farinaLicoli} g")
-                    ResultRow("Acqua (corretta)", "${c.acquaLicoli} g")
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(80.dp))
     }
 }
 
@@ -369,7 +170,6 @@ private fun calcolaTemperature(
     pesoPanetto: Int,
     forzaW: Int
 ): TemperatureResult {
-    // Temperature base per tipo pizza
     var cieloMin: Int
     var cieloMax: Int
     var plateaMin: Int
@@ -400,7 +200,6 @@ private fun calcolaTemperature(
         }
     }
 
-    // Adattamento per tipo forno
     when (tipoForno) {
         TipoForno.DOMESTICO -> {
             cieloMin = minOf(cieloMin, 230)
@@ -429,14 +228,12 @@ private fun calcolaTemperature(
         TipoForno.LEGNA -> { /* massime temperature, nessun limite */ }
     }
 
-    // Correzione per idratazione alta (>70% → cielo più forte)
     if (idratazione > 70 && tipoPizza != TipoPizza.TEGLIA && tipoPizza != TipoPizza.PALA) {
         val boost = ((idratazione - 70) * 1.5).toInt()
         cieloMin += boost
         cieloMax += boost
     }
 
-    // Correzione per farina forte (W > 300)
     if (forzaW > 300) {
         val boost = ((forzaW - 300) * 0.1).toInt()
         cieloMin += boost
@@ -445,9 +242,7 @@ private fun calcolaTemperature(
         plateaMax += boost
     }
 
-    // Consigli pratici
     val consigli = mutableListOf<String>()
-
     if (idratazione >= 75) {
         consigli.add("Alta idratazione: serve cielo forte per asciugare la superficie")
     }
@@ -477,137 +272,384 @@ private fun calcolaTemperature(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TemperatureFornoCalculator(modifier: Modifier = Modifier) {
-    var tipoPizza by rememberSaveable { mutableStateOf(TipoPizza.NAPOLETANA) }
-    var tipoForno by rememberSaveable { mutableStateOf(TipoForno.LEGNA) }
-    var idratazione by rememberSaveable { mutableFloatStateOf(68f) }
-    var pesoPanetto by rememberSaveable { mutableStateOf("250") }
-    var forzaW by rememberSaveable { mutableStateOf("280") }
+fun TemperatureFornoCalculator() {
+    var tipoPizzaLabel by rememberSaveable { mutableStateOf(TipoPizza.NAPOLETANA.label) }
+    var tipoFornoLabel by rememberSaveable { mutableStateOf(TipoForno.LEGNA.label) }
+    var idratazioneStr by rememberSaveable { mutableStateOf("68") }
+    var pesoPanettoStr by rememberSaveable { mutableStateOf("250") }
+    var forzaWStr by rememberSaveable { mutableStateOf("280") }
+
+    val tipoPizza = TipoPizza.entries.firstOrNull { it.label == tipoPizzaLabel } ?: TipoPizza.NAPOLETANA
+    val tipoForno = TipoForno.entries.firstOrNull { it.label == tipoFornoLabel } ?: TipoForno.LEGNA
 
     val result by remember {
         derivedStateOf {
-            val peso = pesoPanetto.toIntOrNull() ?: 250
-            val w = forzaW.toIntOrNull() ?: 280
-            calcolaTemperature(tipoPizza, tipoForno, idratazione.roundToInt(), peso, w)
+            val idro = idratazioneStr.toIntOrNull() ?: 68
+            val peso = pesoPanettoStr.toIntOrNull() ?: 250
+            val w = forzaWStr.toIntOrNull() ?: 280
+            val tp = TipoPizza.entries.firstOrNull { it.label == tipoPizzaLabel } ?: TipoPizza.NAPOLETANA
+            val tf = TipoForno.entries.firstOrNull { it.label == tipoFornoLabel } ?: TipoForno.LEGNA
+            calcolaTemperature(tp, tf, idro, peso, w)
         }
     }
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
+            .background(QuadernoColors.Bg)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
-        Text(
-            "Temperature Forno",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
-
-        // Tipo pizza
-        Text("Tipo di pizza", style = MaterialTheme.typography.labelLarge)
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            TipoPizza.entries.forEach { tipo ->
-                FilterChip(
-                    selected = tipoPizza == tipo,
-                    onClick = { tipoPizza = tipo },
-                    label = { Text(tipo.label, style = MaterialTheme.typography.labelMedium) }
-                )
-            }
+        // Header
+        Column(modifier = Modifier.padding(horizontal = 22.dp, vertical = 16.dp)) {
+            Text(
+                text = "TEMPERATURE FORNO",
+                style = MaterialTheme.typography.labelSmall,
+                color = QuadernoColors.Primary,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = "Temperature Forno",
+                style = MaterialTheme.typography.headlineSmall,
+                color = QuadernoColors.Ink,
+            )
         }
 
-        // Tipo forno
-        Text("Tipo di forno", style = MaterialTheme.typography.labelLarge)
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            TipoForno.entries.forEach { tipo ->
-                FilterChip(
-                    selected = tipoForno == tipo,
-                    onClick = { tipoForno = tipo },
-                    label = { Text(tipo.label, style = MaterialTheme.typography.labelMedium) }
-                )
-            }
+        DashedDivider()
+
+        // Tipo pizza chips
+        Column(modifier = Modifier.padding(horizontal = 22.dp, vertical = 12.dp)) {
+            Text(
+                text = "TIPO DI PIZZA",
+                style = MaterialTheme.typography.labelSmall,
+                color = QuadernoColors.Ink3,
+                modifier = Modifier.padding(bottom = 6.dp),
+            )
+            QChipRow(
+                items = listOf("Napoletana", "Contemporanea", "Teglia", "Pala"),
+                selected = tipoPizzaLabel,
+                onSelect = { tipoPizzaLabel = it },
+                wrap = true,
+            )
         }
 
-        // Idratazione slider
-        Text(
-            "Idratazione: ${idratazione.roundToInt()}%",
-            style = MaterialTheme.typography.labelLarge
-        )
-        Slider(
-            value = idratazione,
-            onValueChange = { idratazione = it },
-            valueRange = 55f..85f,
-            steps = 5
+        DashedDivider()
+
+        // Tipo forno chips
+        Column(modifier = Modifier.padding(horizontal = 22.dp, vertical = 12.dp)) {
+            Text(
+                text = "TIPO DI FORNO",
+                style = MaterialTheme.typography.labelSmall,
+                color = QuadernoColors.Ink3,
+                modifier = Modifier.padding(bottom = 6.dp),
+            )
+            QChipRow(
+                items = listOf("Legna", "Gas", "Elettrico", "Domestico"),
+                selected = tipoFornoLabel,
+                onSelect = { tipoFornoLabel = it },
+            )
+        }
+
+        DashedDivider()
+
+        // Idratazione
+        QField(
+            label = "Idratazione",
+            value = "${idratazioneStr.toIntOrNull() ?: 68}",
+            suffix = "%",
+            onMinus = {
+                val v = (idratazioneStr.toIntOrNull() ?: 68) - 1
+                idratazioneStr = v.coerceIn(55, 85).toString()
+            },
+            onPlus = {
+                val v = (idratazioneStr.toIntOrNull() ?: 68) + 1
+                idratazioneStr = v.coerceIn(55, 85).toString()
+            },
+            hint = "(55 – 85)",
+            dense = true,
         )
 
-        // Peso panetto e forza W
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        // Peso panetto
+        QField(
+            label = "Peso panetto",
+            value = pesoPanettoStr,
+            suffix = "g",
+            onMinus = {
+                val v = (pesoPanettoStr.toIntOrNull() ?: 250) - 10
+                pesoPanettoStr = v.coerceIn(100, 600).toString()
+            },
+            onPlus = {
+                val v = (pesoPanettoStr.toIntOrNull() ?: 250) + 10
+                pesoPanettoStr = v.coerceIn(100, 600).toString()
+            },
+            dense = true,
+        )
+
+        // Forza W
+        QField(
+            label = "W farina",
+            value = forzaWStr,
+            suffix = "W",
+            onMinus = {
+                val v = (forzaWStr.toIntOrNull() ?: 280) - 10
+                forzaWStr = v.coerceIn(100, 500).toString()
+            },
+            onPlus = {
+                val v = (forzaWStr.toIntOrNull() ?: 280) + 10
+                forzaWStr = v.coerceIn(100, 500).toString()
+            },
+            dense = true,
+        )
+
+        // Temperature results card
+        QCard(
+            kicker = "Temperature consigliate",
+            title = "${result.cieloMin}–${result.cieloMax}°C",
         ) {
-            OutlinedTextField(
-                value = pesoPanetto,
-                onValueChange = { pesoPanetto = it.filter { c -> c.isDigit() }.take(4) },
-                label = { Text("Panetto (g)") },
-                modifier = Modifier.weight(1f)
+            QLeaderRow(label = "Cielo (sopra)", value = "${result.cieloMin}–${result.cieloMax}°C")
+            QLeaderRow(label = "Platea (base)", value = "${result.plateaMin}–${result.plateaMax}°C")
+            QLeaderRow(label = "Tempo cottura", value = "${result.tempoMin} – ${result.tempoMax}")
+        }
+
+        // Tips section
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 22.dp, vertical = 8.dp)
+                .background(QuadernoColors.BgWarmer)
+                .padding(start = 12.dp, top = 12.dp, end = 12.dp, bottom = 12.dp)
+        ) {
+            // Olive left border drawn via a nested box
+            Box(
+                modifier = Modifier
+                    .padding(start = 0.dp)
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = "CONSIGLI",
+                        style = TextStyle(
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 2.sp,
+                            color = QuadernoColors.Olive,
+                        ),
+                        modifier = Modifier.padding(bottom = 4.dp),
+                    )
+                    result.consigli.forEach { consiglio ->
+                        Text(
+                            text = "• $consiglio",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = QuadernoColors.Ink2,
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(80.dp))
+    }
+}
+
+// ============================================================
+// CONTENITORE
+// ============================================================
+
+@Composable
+fun ContenitoreCalculator() {
+    var pesoImpasto by rememberSaveable { mutableStateOf("1000") }
+
+    val volume by remember {
+        derivedStateOf {
+            val peso = pesoImpasto.toDoubleOrNull() ?: return@derivedStateOf null
+            if (peso <= 0) return@derivedStateOf null
+            PizzaFormulas.contenitoreVolumeMl(peso)
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(QuadernoColors.Bg)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(0.dp)
+    ) {
+        // Header
+        Column(modifier = Modifier.padding(horizontal = 22.dp, vertical = 16.dp)) {
+            Text(
+                text = "CONTENITORE",
+                style = MaterialTheme.typography.labelSmall,
+                color = QuadernoColors.Primary,
+                fontWeight = FontWeight.SemiBold,
             )
-            OutlinedTextField(
-                value = forzaW,
-                onValueChange = { forzaW = it.filter { c -> c.isDigit() }.take(3) },
-                label = { Text("W farina") },
-                modifier = Modifier.weight(1f)
+            Text(
+                text = "Contenitore",
+                style = MaterialTheme.typography.headlineSmall,
+                color = QuadernoColors.Ink,
             )
         }
 
-        // Risultato
-        OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+        DashedDivider()
+
+        QField(
+            label = "Peso impasto",
+            value = pesoImpasto,
+            suffix = "g",
+            onMinus = {
+                val v = (pesoImpasto.toIntOrNull() ?: 1000) - 50
+                pesoImpasto = v.coerceAtLeast(50).toString()
+            },
+            onPlus = {
+                val v = (pesoImpasto.toIntOrNull() ?: 1000) + 50
+                pesoImpasto = v.toString()
+            },
+            presets = listOf("500", "1000", "1500", "2000"),
+            selectedPreset = if (pesoImpasto in listOf("500", "1000", "1500", "2000")) pesoImpasto else null,
+            onPresetSelect = { pesoImpasto = it },
+        )
+
+        volume?.let { v ->
+            QCard(
+                kicker = "Volume consigliato",
+                title = "${v.roundToInt()} ml",
+                accent = QuadernoColors.Olive,
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Filled.Whatshot,
-                        contentDescription = null,
-                        tint = Color(0xFFD84315)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        "Temperature consigliate",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                QLeaderRow(label = "Volume minimo", value = "${v.roundToInt()} ml")
+                QLeaderRow(label = "In litri", value = "${"%.1f".format(v / 1000.0)} L")
+            }
+        }
 
-                ResultRow("Cielo (sopra)", "${result.cieloMin}–${result.cieloMax}°C")
-                ResultRow("Platea (base)", "${result.plateaMin}–${result.plateaMax}°C")
-                ResultRow("Tempo cottura", "${result.tempoMin} – ${result.tempoMax}")
+        Spacer(modifier = Modifier.height(80.dp))
+    }
+}
 
-                Divider(modifier = Modifier.padding(vertical = 4.dp))
+// ============================================================
+// CONVERSIONE LIEVITO
+// ============================================================
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Filled.TipsAndUpdates,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        "Consigli",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+@Composable
+fun ConversioneLievitoCalculator() {
+    var lievitoFresco by rememberSaveable { mutableStateOf("3") }
+    var farina by rememberSaveable { mutableStateOf("600") }
+    var acqua by rememberSaveable { mutableStateOf("380") }
 
-                result.consigli.forEach { consiglio ->
-                    Text(
-                        text = "• $consiglio",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+    val result by remember {
+        derivedStateOf {
+            try {
+                val l = lievitoFresco.toDoubleOrNull() ?: return@derivedStateOf null
+                val f = farina.toDoubleOrNull() ?: return@derivedStateOf null
+                val a = acqua.toDoubleOrNull() ?: return@derivedStateOf null
+                if (l <= 0 || f <= 0 || a <= 0) return@derivedStateOf null
+                PizzaFormulas.conversioneLievito(l, f, a)
+            } catch (_: Exception) {
+                null
+            }
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(QuadernoColors.Bg)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(0.dp)
+    ) {
+        // Header
+        Column(modifier = Modifier.padding(horizontal = 22.dp, vertical = 16.dp)) {
+            Text(
+                text = "CONVERSIONE LIEVITO",
+                style = MaterialTheme.typography.labelSmall,
+                color = QuadernoColors.Primary,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = "Conversione Lievito",
+                style = MaterialTheme.typography.headlineSmall,
+                color = QuadernoColors.Ink,
+            )
+        }
+
+        DashedDivider()
+
+        QField(
+            label = "Lievito di birra fresco",
+            value = lievitoFresco,
+            suffix = "g",
+            onMinus = {
+                val v = (lievitoFresco.toIntOrNull() ?: 3) - 1
+                lievitoFresco = v.coerceAtLeast(1).toString()
+            },
+            onPlus = {
+                val v = (lievitoFresco.toIntOrNull() ?: 3) + 1
+                lievitoFresco = v.toString()
+            },
+            presets = listOf("1", "2", "3", "5"),
+            selectedPreset = if (lievitoFresco in listOf("1", "2", "3", "5")) lievitoFresco else null,
+            onPresetSelect = { lievitoFresco = it },
+        )
+
+        QField(
+            label = "Farina ricetta",
+            value = farina,
+            suffix = "g",
+            onMinus = {
+                val v = (farina.toIntOrNull() ?: 600) - 50
+                farina = v.coerceAtLeast(50).toString()
+            },
+            onPlus = {
+                val v = (farina.toIntOrNull() ?: 600) + 50
+                farina = v.toString()
+            },
+            dense = true,
+        )
+
+        QField(
+            label = "Acqua ricetta",
+            value = acqua,
+            suffix = "g",
+            onMinus = {
+                val v = (acqua.toIntOrNull() ?: 380) - 10
+                acqua = v.coerceAtLeast(10).toString()
+            },
+            onPlus = {
+                val v = (acqua.toIntOrNull() ?: 380) + 10
+                acqua = v.toString()
+            },
+            dense = true,
+        )
+
+        result?.let { c ->
+            // Card 1: Lieviti secchi
+            QCard(
+                kicker = "Lieviti secchi",
+                title = "${c.ldbs} g",
+            ) {
+                QLeaderRow(label = "LDB fresco", value = "${c.ldbfInput} g")
+                QLeaderRow(label = "LDB secco attivo", value = "${c.ldbs} g")
+                QLeaderRow(label = "LDB secco Caputo", value = "${c.ldbc} g")
+            }
+
+            // Card 2: Lievito madre
+            QCard(
+                kicker = "Lievito madre",
+                title = "${c.lm} g",
+                accent = QuadernoColors.Olive,
+            ) {
+                QLeaderRow(label = "Lievito madre", value = "${c.lm} g")
+                QLeaderRow(label = "Farina (corretta)", value = "${c.farinaLm} g")
+                QLeaderRow(label = "Acqua (corretta)", value = "${c.acquaLm} g")
+            }
+
+            // Card 3: Li.Co.Li.
+            QCard(
+                kicker = "Li.Co.Li.",
+                title = "${c.licoli} g",
+                titleSuffix = "idro 100%",
+                accent = QuadernoColors.Olive,
+            ) {
+                QLeaderRow(label = "Li.Co.Li.", value = "${c.licoli} g")
+                QLeaderRow(label = "Farina (corretta)", value = "${c.farinaLicoli} g")
+                QLeaderRow(label = "Acqua (corretta)", value = "${c.acquaLicoli} g")
             }
         }
 

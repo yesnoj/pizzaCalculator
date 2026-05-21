@@ -1,7 +1,11 @@
 package com.pizzalab.ui.mixfarine
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,26 +13,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -40,11 +36,23 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.pizzalab.domain.MixFarineResult
 import com.pizzalab.domain.PizzaFormulas
+import com.pizzalab.ui.components.DashedDivider
+import com.pizzalab.ui.components.QBarRow
+import com.pizzalab.ui.components.QCard
+import com.pizzalab.ui.components.QLeaderRow
+import com.pizzalab.ui.theme.QuadernoColors
 
 /**
  * Preset di farine comuni con nome, W e proteine tipiche.
@@ -100,9 +108,8 @@ data class FarinaEntry(
     fun getPeso(): Double? = pesoG.toDoubleOrNull()?.takeIf { it > 0 }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MixFarineScreen(modifier: Modifier = Modifier) {
+fun MixFarineScreen() {
 
     // Lista farine (inizia con 2)
     var nextId by rememberSaveable { mutableStateOf(3) }
@@ -129,26 +136,15 @@ fun MixFarineScreen(modifier: Modifier = Modifier) {
     }
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .background(QuadernoColors.Bg)
+            .verticalScroll(rememberScrollState())
+            .padding(vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = "Mix Farine",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = "Inserisci le farine del tuo mix per calcolare la forza risultante e l'idratazione massima consigliata.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
 
-        Spacer(modifier = Modifier.height(4.dp))
-
-        // Carte farine
+        // Flour cards
         farine.forEachIndexed { index, farina ->
             FarinaCard(
                 farina = farina,
@@ -159,22 +155,62 @@ fun MixFarineScreen(modifier: Modifier = Modifier) {
             )
         }
 
-        // Bottone aggiungi farina
+        // "Aggiungi una farina" dashed button
         if (farine.size < 4) {
-            OutlinedButton(
-                onClick = {
-                    farine.add(FarinaEntry(id = nextId))
-                    nextId++
-                },
-                modifier = Modifier.fillMaxWidth()
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 22.dp, vertical = 4.dp)
+                    .border(
+                        width = 1.dp,
+                        color = QuadernoColors.RuleDots,
+                        shape = RoundedCornerShape(2.dp)
+                    )
+                    .drawBehind {
+                        val dashOn = 6.dp.toPx()
+                        val dashOff = 4.dp.toPx()
+                        val effect = PathEffect.dashPathEffect(floatArrayOf(dashOn, dashOff))
+                        val sw = 1.dp.toPx()
+                        // overdraw dashed border on top of solid border
+                        drawRect(
+                            color = QuadernoColors.RuleDots,
+                            style = androidx.compose.ui.graphics.drawscope.Stroke(
+                                width = sw,
+                                pathEffect = effect
+                            )
+                        )
+                    }
+                    .clickable {
+                        farine.add(FarinaEntry(id = nextId))
+                        nextId++
+                    }
+                    .padding(vertical = 12.dp, horizontal = 16.dp),
+                contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.Filled.Add, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Aggiungi farina")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = null,
+                        tint = QuadernoColors.Ink2,
+                        modifier = Modifier.size(16.dp),
+                    )
+                    Text(
+                        text = "Aggiungi una farina",
+                        style = TextStyle(
+                            fontSize = 13.sp,
+                            fontStyle = FontStyle.Italic,
+                            fontWeight = FontWeight.SemiBold,
+                            color = QuadernoColors.Ink2,
+                        ),
+                    )
+                }
             }
         }
 
-        // Risultato
+        // Result card
         risultato?.let { result ->
             Spacer(modifier = Modifier.height(4.dp))
             MixResultCard(result, farine)
@@ -184,7 +220,6 @@ fun MixFarineScreen(modifier: Modifier = Modifier) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FarinaCard(
     farina: FarinaEntry,
@@ -195,131 +230,269 @@ private fun FarinaCard(
 ) {
     var showPresets by remember { mutableStateOf(false) }
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+    // Small card: Paper background, Rule border, 2dp radius
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 22.dp, vertical = 4.dp)
+            .background(QuadernoColors.Paper, RoundedCornerShape(2.dp))
+            .border(1.dp, QuadernoColors.Rule, RoundedCornerShape(2.dp))
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            // Header con titolo e bottone rimuovi
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+
+            // Header: kicker "FARINA N" in Primary + optional remove button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "Farina $index",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold
+                    text = "FARINA $index",
+                    style = TextStyle(
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.5.sp,
+                        color = QuadernoColors.Primary,
+                    ),
                 )
-                Row {
-                    OutlinedButton(
-                        onClick = { showPresets = !showPresets }
-                    ) {
-                        Text(if (showPresets) "Chiudi" else "Preset", style = MaterialTheme.typography.labelSmall)
-                    }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    // Preset toggle
+                    Text(
+                        text = if (showPresets) "Chiudi" else "Preset",
+                        style = TextStyle(
+                            fontSize = 11.sp,
+                            fontStyle = FontStyle.Italic,
+                            fontWeight = FontWeight.SemiBold,
+                            color = QuadernoColors.Ink2,
+                        ),
+                        modifier = Modifier
+                            .border(1.dp, QuadernoColors.Rule, RoundedCornerShape(2.dp))
+                            .clickable { showPresets = !showPresets }
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                    )
                     if (canRemove) {
-                        IconButton(onClick = onRemove) {
+                        IconButton(onClick = onRemove, modifier = Modifier.size(28.dp)) {
                             Icon(
                                 Icons.Filled.Close,
                                 contentDescription = "Rimuovi",
-                                tint = MaterialTheme.colorScheme.error
+                                tint = QuadernoColors.Ink2,
+                                modifier = Modifier.size(16.dp),
                             )
                         }
                     }
                 }
             }
 
-            // Preset farine
+            // Flour name in bold
+            if (farina.nome.isNotEmpty()) {
+                Text(
+                    text = farina.nome,
+                    style = TextStyle(
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = QuadernoColors.Ink,
+                    ),
+                )
+            }
+
+            // Preset list
             AnimatedVisibility(visible = showPresets) {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     FarinaPreset.presets.forEach { preset ->
-                        OutlinedButton(
-                            onClick = {
-                                onUpdate(
-                                    farina.copy(
-                                        nome = preset.nome,
-                                        wValue = preset.w.toString(),
-                                        proteineValue = preset.proteine.toString(),
-                                        inputMode = FarinaEntry.InputMode.W
+                        Text(
+                            text = "${preset.nome} — W${preset.w} (${preset.proteine}%)",
+                            style = TextStyle(
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = QuadernoColors.Ink2,
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onUpdate(
+                                        farina.copy(
+                                            nome = preset.nome,
+                                            wValue = preset.w.toString(),
+                                            proteineValue = preset.proteine.toString(),
+                                            inputMode = FarinaEntry.InputMode.W
+                                        )
                                     )
-                                )
-                                showPresets = false
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                "${preset.nome} — W${preset.w} (${preset.proteine}%)",
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
+                                    showPresets = false
+                                }
+                                .padding(vertical = 6.dp, horizontal = 4.dp),
+                        )
                     }
                 }
             }
 
-            // Peso
-            OutlinedTextField(
-                value = farina.pesoG,
-                onValueChange = { onUpdate(farina.copy(pesoG = it.filter { c -> c.isDigit() || c == '.' }.take(7))) },
-                label = { Text("Peso (g)") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Fields row: Peso (ink underline) + W or Proteine (olive underline)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                // Peso field
+                QInlineField(
+                    label = "peso",
+                    value = farina.pesoG,
+                    placeholder = "—",
+                    suffix = "g",
+                    underlineColor = QuadernoColors.Ink,
+                    keyboardType = KeyboardType.Number,
+                    onValueChange = {
+                        onUpdate(farina.copy(pesoG = it.filter { c -> c.isDigit() || c == '.' }.take(7)))
+                    },
+                    modifier = Modifier.weight(1f),
+                )
+
+                // W or Proteine field
+                if (farina.inputMode == FarinaEntry.InputMode.W) {
+                    QInlineField(
+                        label = "W",
+                        value = farina.wValue,
+                        placeholder = "—",
+                        suffix = "",
+                        underlineColor = QuadernoColors.Olive,
+                        keyboardType = KeyboardType.Number,
+                        onValueChange = {
+                            onUpdate(farina.copy(wValue = it.filter { c -> c.isDigit() }.take(3)))
+                        },
+                        modifier = Modifier.weight(1f),
+                    )
+                } else {
+                    val wStimato = farina.getW()
+                    QInlineField(
+                        label = "proteine %",
+                        value = farina.proteineValue,
+                        placeholder = "—",
+                        suffix = if (wStimato != null) "W$wStimato" else "%",
+                        underlineColor = QuadernoColors.Olive,
+                        keyboardType = KeyboardType.Decimal,
+                        onValueChange = {
+                            onUpdate(farina.copy(proteineValue = it.filter { c -> c.isDigit() || c == '.' }.take(5)))
+                        },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
 
             // Toggle W / Proteine
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                FilterChip(
-                    selected = farina.inputMode == FarinaEntry.InputMode.W,
-                    onClick = { onUpdate(farina.copy(inputMode = FarinaEntry.InputMode.W)) },
-                    label = { Text("Forza (W)") },
-                    modifier = Modifier.weight(1f)
-                )
-                FilterChip(
-                    selected = farina.inputMode == FarinaEntry.InputMode.PROTEINE,
-                    onClick = { onUpdate(farina.copy(inputMode = FarinaEntry.InputMode.PROTEINE)) },
-                    label = { Text("Proteine (%)") },
-                    modifier = Modifier.weight(1f)
-                )
+                listOf(
+                    "W" to FarinaEntry.InputMode.W,
+                    "Proteine %" to FarinaEntry.InputMode.PROTEINE,
+                ).forEach { (label, mode) ->
+                    val isSelected = farina.inputMode == mode
+                    Box(
+                        modifier = Modifier
+                            .border(
+                                1.dp,
+                                if (isSelected) QuadernoColors.Olive else QuadernoColors.Rule,
+                                RoundedCornerShape(2.dp),
+                            )
+                            .background(
+                                if (isSelected) QuadernoColors.Olive else QuadernoColors.Paper,
+                                RoundedCornerShape(2.dp),
+                            )
+                            .clickable { onUpdate(farina.copy(inputMode = mode)) }
+                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                    ) {
+                        Text(
+                            text = label,
+                            style = TextStyle(
+                                fontSize = 11.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                fontStyle = if (isSelected) FontStyle.Normal else FontStyle.Italic,
+                                color = if (isSelected) QuadernoColors.Paper else QuadernoColors.Ink2,
+                            ),
+                        )
+                    }
+                }
             }
+        }
+    }
+}
 
-            // Input W o Proteine
-            if (farina.inputMode == FarinaEntry.InputMode.W) {
-                OutlinedTextField(
-                    value = farina.wValue,
-                    onValueChange = { onUpdate(farina.copy(wValue = it.filter { c -> c.isDigit() }.take(3))) },
-                    label = { Text("Valore W") },
-                    placeholder = { Text("es. 260") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
-                )
-            } else {
-                OutlinedTextField(
-                    value = farina.proteineValue,
-                    onValueChange = {
-                        onUpdate(farina.copy(
-                            proteineValue = it.filter { c -> c.isDigit() || c == '.' }.take(5)
-                        ))
-                    },
-                    label = { Text("Proteine (%)") },
-                    placeholder = { Text("es. 12.5") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    supportingText = {
-                        val w = farina.getW()
-                        if (w != null && farina.proteineValue.isNotEmpty()) {
-                            Text("W stimato: $w")
+/** Inline editable field with a solid underline. */
+@Composable
+private fun QInlineField(
+    label: String,
+    value: String,
+    placeholder: String,
+    suffix: String,
+    underlineColor: androidx.compose.ui.graphics.Color,
+    keyboardType: KeyboardType,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = label,
+            style = TextStyle(
+                fontSize = 10.sp,
+                fontStyle = FontStyle.Italic,
+                color = QuadernoColors.Ink3,
+                letterSpacing = 0.02.sp,
+            ),
+            modifier = Modifier.padding(bottom = 2.dp),
+        )
+        Row(
+            verticalAlignment = Alignment.Bottom,
+            modifier = Modifier
+                .fillMaxWidth()
+                .drawBehind {
+                    drawLine(
+                        color = underlineColor,
+                        start = Offset(0f, size.height),
+                        end = Offset(size.width, size.height),
+                        strokeWidth = 2.dp.toPx(),
+                    )
+                }
+                .padding(bottom = 3.dp),
+        ) {
+            BasicTextField(
+                value = value,
+                onValueChange = onValueChange,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+                textStyle = TextStyle(
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = QuadernoColors.Ink,
+                    letterSpacing = (-0.01).sp,
+                ),
+                cursorBrush = SolidColor(QuadernoColors.Primary),
+                decorationBox = { innerTextField ->
+                    Box(modifier = Modifier.weight(1f)) {
+                        if (value.isEmpty()) {
+                            Text(
+                                text = placeholder,
+                                style = TextStyle(
+                                    fontSize = 17.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    fontStyle = FontStyle.Italic,
+                                    color = QuadernoColors.Ink3,
+                                ),
+                            )
                         }
-                    },
-                    modifier = Modifier.fillMaxWidth()
+                        innerTextField()
+                    }
+                },
+                modifier = Modifier.weight(1f),
+            )
+            if (suffix.isNotEmpty()) {
+                Text(
+                    text = " $suffix",
+                    style = TextStyle(
+                        fontSize = 11.sp,
+                        color = QuadernoColors.Ink2,
+                    ),
+                    modifier = Modifier.padding(start = 2.dp),
                 )
             }
         }
@@ -328,141 +501,65 @@ private fun FarinaCard(
 
 @Composable
 private fun MixResultCard(result: MixFarineResult, farine: List<FarinaEntry>) {
-    OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                "Risultato Mix",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            Divider(modifier = Modifier.padding(vertical = 4.dp))
-
-            // Composizione mix
-            Text(
-                "Composizione",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            farine.forEachIndexed { i, f ->
-                val nome = if (f.nome.isNotEmpty()) f.nome else "Farina ${i + 1}"
-                val w = f.getW() ?: 0
-                val pct = result.percentuali.getOrNull(i) ?: 0.0
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        "$nome (W$w)",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        "${pct}%",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-
-            Divider(modifier = Modifier.padding(vertical = 4.dp))
-
-            // W medio
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    "Forza risultante",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    "W ${result.wMedio}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Peso totale", style = MaterialTheme.typography.bodyMedium)
-                Text("${result.pesoTotale} g", style = MaterialTheme.typography.bodyMedium)
-            }
-
-            Divider(modifier = Modifier.padding(vertical = 4.dp))
-
-            // Idratazione massima
-            Text(
-                "Idratazione massima consigliata",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            // Barra visuale sicura
-            HydrationBar(
-                label = "Sicura (a mano)",
-                value = result.idroMaxSicura,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            // Barra visuale avanzata
-            HydrationBar(
-                label = "Avanzata (planetaria)",
-                value = result.idroMaxAvanzata,
-                color = MaterialTheme.colorScheme.tertiary
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Suggerimento testuale
-            Text(
-                text = when {
-                    result.wMedio < 180 -> "Farina debole: adatta a lievitazioni brevi (1-4h), impasto croccante."
-                    result.wMedio < 250 -> "Farina media: buona per pizze classiche con lievitazione di 8-12h."
-                    result.wMedio < 320 -> "Farina forte: ideale per lievitazioni lunghe (24h+), buona struttura."
-                    else -> "Farina molto forte: perfetta per lievitazioni molto lunghe (48h+) o impasti ad alta idratazione."
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+    QCard(
+        kicker = "Risultato mix",
+        title = "W ${result.wMedio}",
+        titleSuffix = "· ${result.pesoTotale} g totali",
+    ) {
+        // Flour percentage breakdown
+        farine.forEachIndexed { i, f ->
+            val nome = if (f.nome.isNotEmpty()) f.nome else "Farina ${i + 1}"
+            val w = f.getW() ?: 0
+            val pct = result.percentuali.getOrNull(i) ?: 0.0
+            QLeaderRow(
+                label = "$nome (W$w)",
+                value = "${pct}",
+                unit = "%",
             )
         }
-    }
-}
 
-@Composable
-private fun HydrationBar(
-    label: String,
-    value: Int,
-    color: androidx.compose.ui.graphics.Color
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(label, style = MaterialTheme.typography.bodyMedium)
-            Text(
-                "$value%",
-                style = MaterialTheme.typography.bodyLarge,
+        DashedDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+        // Hydration bars
+        Text(
+            text = "IDRATAZIONE MAX",
+            style = TextStyle(
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
-                color = color
-            )
-        }
-        LinearProgressIndicator(
-            progress = value / 100f,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(8.dp),
-            color = color,
-            trackColor = MaterialTheme.colorScheme.surfaceVariant
+                letterSpacing = 2.5.sp,
+                color = QuadernoColors.Primary,
+            ),
+            modifier = Modifier.padding(bottom = 2.dp),
+        )
+
+        QBarRow(
+            label = "sicura (a mano)",
+            value = result.idroMaxSicura,
+            color = QuadernoColors.Primary,
+        )
+
+        QBarRow(
+            label = "avanzata (planetaria)",
+            value = result.idroMaxAvanzata,
+            color = QuadernoColors.Olive,
+        )
+
+        DashedDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+        // Footer classification text
+        Text(
+            text = when {
+                result.wMedio < 180 -> "Farina debole: adatta a lievitazioni brevi (1–4h), impasto croccante."
+                result.wMedio < 250 -> "Farina media: buona per pizze classiche con lievitazione di 8–12h."
+                result.wMedio < 320 -> "Farina forte: ideale per lievitazioni lunghe (24h+), buona struttura."
+                else -> "Farina molto forte: perfetta per lievitazioni molto lunghe (48h+) o impasti ad alta idratazione."
+            },
+            style = TextStyle(
+                fontSize = 12.sp,
+                fontStyle = FontStyle.Italic,
+                color = QuadernoColors.Ink2,
+                lineHeight = 17.sp,
+            ),
         )
     }
 }

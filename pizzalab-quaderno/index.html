@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PizzaLab · Quaderno — Mockup completi</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    html, body {
+      margin: 0; padding: 0; background: #EFE7D2;
+      font-family: 'Inter', system-ui, sans-serif; color: #2B1F12;
+      -webkit-font-smoothing: antialiased;
+    }
+    * { box-sizing: border-box; }
+
+    @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+    .page { max-width: 1880px; margin: 0 auto; padding: 64px 48px 96px; }
+
+    /* ── Hero ───────────────────────────────────────────── */
+    .hero {
+      display: grid; grid-template-columns: 2fr 1fr; gap: 48px;
+      padding-bottom: 40px; margin-bottom: 56px;
+      border-bottom: 2px solid #2B1F12;
+      position: relative;
+    }
+    .hero::before, .hero::after {
+      content: ''; position: absolute; width: 28px; height: 28px;
+      border-color: #A8392B; border-style: solid;
+    }
+    .hero::before { top: -8px; left: -16px; border-width: 3px 0 0 3px; }
+    .hero::after  { bottom: -8px; right: -16px; border-width: 0 3px 3px 0; }
+
+    .hero .kicker {
+      font-size: 12px; font-weight: 700; letter-spacing: 0.32em;
+      text-transform: uppercase; color: #A8392B; margin-bottom: 16px;
+    }
+    .hero h1 {
+      margin: 0; font-size: 84px; font-weight: 900;
+      letter-spacing: -0.04em; line-height: 0.95; color: #2B1F12;
+    }
+    .hero .italic {
+      font-style: italic; font-weight: 400; color: #5E6B3D;
+      font-size: 44px; letter-spacing: -0.02em;
+    }
+    .hero .lede {
+      margin-top: 24px; font-size: 17px; line-height: 1.55; color: #65553E;
+      max-width: 640px;
+    }
+    .hero .meta {
+      align-self: end; font-size: 13px; color: #65553E; line-height: 1.7;
+    }
+    .hero .meta dt {
+      font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+      color: #A8392B; font-size: 10px; margin-top: 14px;
+    }
+    .hero .meta dt:first-child { margin-top: 0; }
+    .hero .meta dd { margin: 4px 0 0; font-style: italic; }
+    .hero .meta dd strong { font-style: normal; font-weight: 600; color: #2B1F12; }
+
+    /* ── Section header ─────────────────────────────────── */
+    .section { margin-top: 72px; }
+    .section:first-of-type { margin-top: 0; }
+    .sectionHead {
+      display: flex; align-items: baseline; gap: 18px;
+      padding-bottom: 18px; margin-bottom: 36px;
+      border-bottom: 1px solid #D9CEB3;
+    }
+    .sectionHead .num {
+      font-size: 56px; font-weight: 900; color: #A8392B;
+      letter-spacing: -0.04em; line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .sectionHead .title {
+      font-size: 30px; font-weight: 800; letter-spacing: -0.025em;
+    }
+    .sectionHead .italic {
+      font-style: italic; font-weight: 400; font-size: 22px; color: #5E6B3D;
+    }
+    .sectionHead .meta {
+      flex: 1; text-align: right; font-size: 12.5px; font-style: italic; color: #9D8B6E;
+    }
+
+    /* ── Phone grid ─────────────────────────────────────── */
+    .grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px 24px;
+    }
+    @media (max-width: 1380px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 1060px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 720px)  { .grid { grid-template-columns: 1fr; } .page { padding: 32px 16px; } .hero { grid-template-columns: 1fr; gap: 16px; } .hero h1 { font-size: 56px; } }
+
+    .slot { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+    .slot .num {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.24em;
+      color: #A8392B; text-transform: uppercase; align-self: flex-start;
+    }
+    .slot .label {
+      font-size: 15px; font-weight: 700; color: #2B1F12;
+      align-self: flex-start; letter-spacing: -0.01em;
+    }
+    .slot .desc {
+      font-size: 12px; color: #65553E; font-style: italic;
+      align-self: flex-start; line-height: 1.4; margin-top: -6px;
+    }
+    .stage {
+      width: 100%; display: flex; justify-content: center; align-items: flex-start;
+    }
+    .scaler { transform-origin: top center; }
+
+    /* ── Token panel at end ─────────────────────────────── */
+    .tokens {
+      margin-top: 80px; padding: 32px;
+      background: #FDF9EE; border: 1px solid #D9CEB3; border-radius: 4px;
+      position: relative;
+    }
+    .tokens::before, .tokens::after {
+      content: ''; position: absolute; width: 22px; height: 22px;
+      border-color: #A8392B; border-style: solid;
+    }
+    .tokens::before { top: -1px; left: -1px; border-width: 3px 0 0 3px; }
+    .tokens::after  { bottom: -1px; right: -1px; border-width: 0 3px 3px 0; }
+
+    .tokens h2 {
+      margin: 0 0 8px; font-size: 28px; font-weight: 800; letter-spacing: -0.02em;
+    }
+    .tokens .kicker {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.24em;
+      text-transform: uppercase; color: #A8392B; margin-bottom: 12px;
+    }
+    .tokens .desc { font-size: 13px; color: #65553E; font-style: italic; margin-bottom: 24px; max-width: 680px; }
+
+    .tokenGrid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 24px;
+    }
+    @media (max-width: 1060px) { .tokenGrid { grid-template-columns: repeat(2, 1fr); } }
+
+    .swatch {
+      padding: 14px; border-radius: 3px; position: relative; overflow: hidden;
+      border: 1px solid #D9CEB3;
+    }
+    .swatch .swName { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .swatch .swHex  { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 4px; letter-spacing: -0.01em; }
+    .swatch .swDesc { font-size: 11px; font-style: italic; margin-top: 4px; line-height: 1.4; opacity: 0.85; }
+
+    .footer {
+      margin-top: 64px; padding-top: 24px;
+      border-top: 1px solid #D9CEB3;
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 12px; color: #9D8B6E; font-style: italic;
+    }
+    .footer strong { font-style: normal; color: #2B1F12; font-weight: 700; }
+  </style>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" src="android-frame.jsx"></script>
+  <script type="text/babel" src="shared.jsx"></script>
+  <script type="text/babel" src="quaderno-core.jsx"></script>
+  <script type="text/babel" src="quaderno-calc.jsx"></script>
+  <script type="text/babel" src="quaderno-rest.jsx"></script>
+
+  <script type="text/babel" data-presets="react">
+    const DEV_W = 412, DEV_H = 892;
+
+    // Each phone scales itself to its parent column via ResizeObserver.
+    function Phone({ num, label, desc, children }) {
+      const stageRef = React.useRef(null);
+      const [scale, setScale] = React.useState(1);
+      React.useLayoutEffect(() => {
+        const el = stageRef.current; if (!el) return;
+        const measure = () => {
+          const w = el.clientWidth;
+          setScale(Math.min(1, Math.max(0.25, w / DEV_W)));
+        };
+        measure();
+        const ro = new ResizeObserver(measure); ro.observe(el);
+        return () => ro.disconnect();
+      }, []);
+      return (
+        <div className="slot">
+          <div className="num">{num}</div>
+          <div className="label">{label}</div>
+          {desc && <div className="desc">{desc}</div>}
+          <div className="stage" ref={stageRef} style={{ height: DEV_H * scale }}>
+            <div className="scaler" style={{ transform: 'scale(' + scale + ')' }}>
+              <AndroidDevice width={DEV_W} height={DEV_H}>{children}</AndroidDevice>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Render a screen wrapped in the standard 4-tab shell.
+    const Wrap = (which, body, overlay) => (
+      <Q_Shell active={which} overlay={overlay}>{body}</Q_Shell>
+    );
+
+    function App() {
+      return (
+        <div className="page">
+          {/* ── Hero ── */}
+          <div className="hero">
+            <div>
+              <div className="kicker">PizzaLab · proposta di redesign</div>
+              <h1>Quaderno <span className="italic">del pizzaiolo</span></h1>
+              <div className="lede">
+                Tutte le schermate dell'app, ridisegnate in stile editoriale-quaderno.
+                Conservato lo schema delle 4 tab e tutta la logica originale; rifatti
+                tipografia, colore, card, slider e gerarchia visiva.
+                Pronto da consegnare a <strong>Cowork</strong> per l'integrazione nell'app reale.
+              </div>
+            </div>
+            <dl className="meta">
+              <dt>Direzione</dt><dd><strong>Quaderno</strong> · variante B</dd>
+              <dt>Schermate</dt><dd><strong>22 mockup</strong> · 4 tab + dialog + splash</dd>
+              <dt>Font</dt><dd>Inter (sans neutro moderno) · 400–900</dd>
+              <dt>Palette</dt><dd>Carta avorio · tomato deep · oliva</dd>
+              <dt>Riferimento codice</dt><dd>tokens.css · HANDOFF.md · zip nella cartella</dd>
+            </dl>
+          </div>
+
+          {/* ─────────── 00 · Splash ─────────── */}
+          <div className="section">
+            <div className="sectionHead">
+              <div className="num">00</div>
+              <div className="title">Splash</div>
+              <div className="italic">avvio app</div>
+              <div className="meta">1 schermata</div>
+            </div>
+            <div className="grid">
+              <Phone num="00.1" label="Splash" desc="Mostrato 1–2 s all'avvio">
+                <Q_Splash />
+              </Phone>
+            </div>
+          </div>
+
+          {/* ─────────── 01 · Calcolatore ─────────── */}
+          <div className="section">
+            <div className="sectionHead">
+              <div className="num">01</div>
+              <div className="title">Calcolatore</div>
+              <div className="italic">10 calcolatori in 3 categorie</div>
+              <div className="meta">11 schermate · Impasto · Farine · Utility</div>
+            </div>
+            <div className="grid">
+              <Phone num="01.1" label="Facile · Per Panetti" desc="Caso d'uso principale">
+                {Wrap('calc', <Q_Calculator defaultTab="Facile"/>)}
+              </Phone>
+              <Phone num="01.2" label="Facile · Da Farina" desc="Stessa formula, partendo dalla farina disponibile">
+                {Wrap('calc', <DaFarinaWrapper/>)}
+              </Phone>
+              <Phone num="01.3" label="Avanzato" desc="Pieno controllo su puntata / frigo / appretto">
+                {Wrap('calc', <Q_Calculator defaultTab="Avanzato"/>)}
+              </Phone>
+              <Phone num="01.4" label="PRO" desc="Tutti gli ingredienti in % sulla farina">
+                {Wrap('calc', <Q_Calculator defaultTab="PRO"/>)}
+              </Phone>
+              <Phone num="01.5" label="Teglia" desc="Pizza al taglio · rotonda / quadrata / rettangolare">
+                {Wrap('calc', <Q_Calculator defaultTab="Teglia"/>)}
+              </Phone>
+              <Phone num="01.6" label="Biga" desc="Prefermento + rinfresco">
+                {Wrap('calc', <Q_Calculator defaultTab="Biga"/>)}
+              </Phone>
+              <Phone num="01.7" label="Mix Farine" desc="Forza media e idratazione max consigliata">
+                {Wrap('calc', <Q_Calculator defaultTab="Mix Farine"/>)}
+              </Phone>
+              <Phone num="01.8" label="W da Proteine" desc="Stima forza dalle proteine in etichetta">
+                {Wrap('calc', <Q_Calculator defaultTab="W·Proteine"/>)}
+              </Phone>
+              <Phone num="01.9" label="Temperature Forno" desc="Cielo / platea / tempo · consigli pratici">
+                {Wrap('calc', <Q_Calculator defaultTab="Temp."/>)}
+              </Phone>
+              <Phone num="01.10" label="Contenitore" desc="Volume utile = impasto × 2.4">
+                {Wrap('calc', <Q_Calculator defaultTab="Contenitore"/>)}
+              </Phone>
+              <Phone num="01.11" label="Conversione Lievito" desc="Fresco → secco / LM / LiCoLi">
+                {Wrap('calc', <Q_Calculator defaultTab="Conversione"/>)}
+              </Phone>
+            </div>
+          </div>
+
+          {/* ─────────── 02 · Processo ─────────── */}
+          <div className="section">
+            <div className="sectionHead">
+              <div className="num">02</div>
+              <div className="title">Processo</div>
+              <div className="italic">timeline di lievitazione</div>
+              <div className="meta">6 stati · template · attivo · completato · dialog</div>
+            </div>
+            <div className="grid">
+              <Phone num="02.1" label="Template selector" desc="Empty state — scegli o crea da zero">
+                {Wrap('proc', <Q_ProcessTemplates/>)}
+              </Phone>
+              <Phone num="02.2" label="Processo attivo" desc="Fase in corso, completate ed in attesa">
+                {Wrap('proc', <Q_ProcessActive/>)}
+              </Phone>
+              <Phone num="02.3" label="Long-press menu" desc="Modifica / elimina fase in attesa">
+                {Wrap('proc', <Q_ProcessContextMenu/>)}
+              </Phone>
+              <Phone num="02.4" label="Nuovo processo · dialog" desc="Input nome — modal centrato">
+                {Wrap('proc', <Q_ProcessTemplates/>, <Q_ProcessNewDialog/>)}
+              </Phone>
+              <Phone num="02.5" label="Nuova fase · dialog" desc="Preset chip + nome + descrizione + durata">
+                {Wrap('proc', <Q_ProcessActive/>, <Q_ProcessAddPhaseDialog/>)}
+              </Phone>
+              <Phone num="02.6" label="Processo completato" desc="Tutti i tempi fatti — invito alla cottura">
+                {Wrap('proc', <Q_ProcessCompleted/>)}
+              </Phone>
+            </div>
+          </div>
+
+          {/* ─────────── 03 · Cottura ─────────── */}
+          <div className="section">
+            <div className="sectionHead">
+              <div className="num">03</div>
+              <div className="title">Cottura</div>
+              <div className="italic">timer del forno</div>
+              <div className="meta">5 stati · single / custom / multi / suono / pronta</div>
+            </div>
+            <div className="grid">
+              <Phone num="03.1" label="Timer principale" desc="Quadrante a orologio, lancetta + arco">
+                {Wrap('cook', <Q_Cooking state="running"/>)}
+              </Phone>
+              <Phone num="03.2" label="Custom timer" desc="Tempo libero — input mm:ss + preset rapidi">
+                {Wrap('cook', <Q_CookingCustom/>)}
+              </Phone>
+              <Phone num="03.3" label="Multi-timer" desc="Più pizze in parallelo, micro-quadranti">
+                {Wrap('cook', <Q_CookingMultiTimer/>)}
+              </Phone>
+              <Phone num="03.4" label="Pronta!" desc="Stato di completamento — quadrante pieno">
+                {Wrap('cook', <Q_Cooking state="complete"/>)}
+              </Phone>
+              <Phone num="03.5" label="Suono allarme · dialog" desc="Anteprima e selezione del suono">
+                {Wrap('cook', <Q_Cooking state="running"/>, <Q_CookingSoundPicker/>)}
+              </Phone>
+            </div>
+          </div>
+
+          {/* ─────────── 04 · Aiuto ─────────── */}
+          <div className="section">
+            <div className="sectionHead">
+              <div className="num">04</div>
+              <div className="title">Aiuto</div>
+              <div className="italic">glossario completo</div>
+              <div className="meta">1 schermata · 5 sezioni · 25+ voci</div>
+            </div>
+            <div className="grid">
+              <Phone num="04.1" label="Glossario" desc="Tabella a due colonne: termine → definizione">
+                {Wrap('help', <Q_Help/>)}
+              </Phone>
+            </div>
+          </div>
+
+          {/* ─────────── Tokens preview ─────────── */}
+          <div className="tokens">
+            <div className="kicker">Design tokens · pronti per Compose</div>
+            <h2>Palette, tipografia, spazi</h2>
+            <div className="desc">
+              Estratti completi in <strong>tokens.css</strong> e <strong>tokens.kt</strong>.
+              Vedi anche <strong>HANDOFF.md</strong> per la guida alla mappatura Compose.
+            </div>
+            <div className="tokenGrid">
+              {[
+                { name: 'paper',     hex: '#FDF9EE', dark: false, desc: 'card · dialog · superfici' },
+                { name: 'bg',        hex: '#F5EEDC', dark: false, desc: 'sfondo app · carta antica' },
+                { name: 'bgWarmer',  hex: '#EFE7D2', dark: false, desc: 'sunken · pressed states' },
+                { name: 'ink',       hex: '#2B1F12', dark: true,  desc: 'testo primario · CTA scura' },
+                { name: 'ink2',      hex: '#65553E', dark: true,  desc: 'testo secondario' },
+                { name: 'ink3',      hex: '#9D8B6E', dark: true,  desc: 'meta · placeholder · italic' },
+                { name: 'rule',      hex: '#D9CEB3', dark: false, desc: 'hairline solido' },
+                { name: 'ruleDots',  hex: '#C5B591', dark: false, desc: 'hairline tratteggiato' },
+                { name: 'primary',   hex: '#A8392B', dark: true,  desc: 'tomato — accento unico' },
+                { name: 'primaryHi', hex: '#C04A2A', dark: true,  desc: 'hover / pressed' },
+                { name: 'olive',     hex: '#5E6B3D', dark: true,  desc: 'verde — successo · W · italic' },
+                { name: 'oliveDk',   hex: '#3F4A28', dark: true,  desc: 'oliva scuro' },
+              ].map(c => (
+                <div key={c.name} className="swatch" style={{
+                  background: c.hex,
+                  color: c.dark ? '#FDF9EE' : '#2B1F12',
+                }}>
+                  <div className="swName">{c.name}</div>
+                  <div className="swHex">{c.hex}</div>
+                  <div className="swDesc">{c.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="footer">
+            <div>PizzaLab · Quaderno · proposta di redesign — 22 schermate · 21 mag 2026</div>
+            <div><strong>handoff Cowork</strong> · vedi README + HANDOFF + tokens nello zip</div>
+          </div>
+        </div>
+      );
+    }
+
+    // The Da Farina sub-view inside Facile is gated by state — render it
+    // standalone here to show its full layout as a separate mockup.
+    function DaFarinaWrapper() {
+      return (
+        <div style={{ background: Q.bg, minHeight: '100%' }}>
+          <Q_Header kicker="Calcolo · Facile" title="Facile" italic="da farina" right={
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontFamily: Q.font, fontStyle: 'italic', fontSize: 11, color: Q.ink3 }}>oggi · 21 mag</div>
+              <div style={{ fontFamily: Q.font, fontSize: 12, color: Q.ink2, fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>22 °C</div>
+            </div>
+          }/>
+          <Q_CalcTabStrip tab="Facile" onChange={() => {}}/>
+          <Q_CalcDaFarinaInner onModeChange={() => {}}/>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

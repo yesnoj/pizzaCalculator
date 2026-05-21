@@ -1,0 +1,101 @@
+/* ============================================================
+ * PizzaLab — Quaderno direction
+ * Design tokens. Mirrors what Q_CSS exposes in quaderno-core.jsx,
+ * formatted for direct copy into a stylesheet or as a reference
+ * for the Compose translation.
+ *
+ * For Compose equivalents, see tokens.kt and HANDOFF.md.
+ * ============================================================ */
+
+:root {
+  /* ── Palette ────────────────────────────────────────────── */
+  --q-paper:       #FDF9EE;  /* card surface, dialog */
+  --q-bg:          #F5EEDC;  /* app background — aged paper */
+  --q-bg-warmer:   #EFE7D2;  /* sunken / pressed */
+  --q-ink:         #2B1F12;  /* primary text, dark CTA */
+  --q-ink-2:       #65553E;  /* secondary text */
+  --q-ink-3:       #9D8B6E;  /* meta, placeholder, italic */
+  --q-rule:        #D9CEB3;  /* solid 1px hairline */
+  --q-rule-dots:   #C5B591;  /* dotted 1px hairline */
+  --q-primary:     #A8392B;  /* tomato — single accent */
+  --q-primary-hi:  #C04A2A;  /* hover / pressed variant */
+  --q-olive:       #5E6B3D;  /* secondary accent — W, durations, success-ish */
+  --q-olive-dk:    #3F4A28;  /* olive emphasis */
+
+  /* Category accents (shown only on calculator's category labels) */
+  --q-cat-impasto: #A8392B;  /* same as primary */
+  --q-cat-farine:  #5E6B3D;  /* same as olive */
+  --q-cat-utility: #7A6043;  /* warm brown */
+
+  /* ── Typography ────────────────────────────────────────── */
+  --q-font: 'Inter', system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+
+  /* Type scale — pair of (size / line-height / weight) */
+  --q-display:    900 56px/1   var(--q-font);  /* Splash wordmark */
+  --q-h1:         800 28px/1.1 var(--q-font);  /* screen title */
+  --q-h2:         800 22px/1.2 var(--q-font);  /* card title */
+  --q-h3:         800 18px/1.2 var(--q-font);  /* phase name, glossary section */
+  --q-label-lg:   700 14px/1.3 var(--q-font);  /* tab on, field label */
+  --q-body:       500 13px/1.55 var(--q-font);
+  --q-body-sm:    500 12px/1.5 var(--q-font);
+  --q-italic:     400 italic 12px/1.5 var(--q-font);
+  --q-kicker:     700 10.5px/1.2 var(--q-font);  /* + letter-spacing 0.24em + UPPERCASE */
+  --q-numeric:    800 22px/1   var(--q-font);   /* + font-variant-numeric: tabular-nums */
+  --q-numeric-lg: 800 38px/1   var(--q-font);   /* timer / hero numerals */
+
+  /* ── Spacing — 2dp base, but mostly 4/8/12/14/16/20 ────── */
+  --q-sp-1:  4px;
+  --q-sp-2:  8px;
+  --q-sp-3:  12px;
+  --q-sp-4:  14px;
+  --q-sp-5:  16px;
+  --q-sp-6:  20px;
+  --q-sp-7:  22px;  /* horizontal page padding */
+  --q-sp-8:  24px;
+  --q-sp-12: 48px;
+
+  /* ── Radii (intentionally small — feels printed, not Material) */
+  --q-r-tiny:  2px;   /* card, recipe card */
+  --q-r-sm:    3px;   /* chips, preset */
+  --q-r-md:    4px;   /* dialog, buttons */
+  --q-r-pill:  999px; /* circle stepper, status badge */
+
+  /* ── Borders ───────────────────────────────────────────── */
+  --q-border:        1px solid var(--q-rule);
+  --q-border-dashed: 1px dashed var(--q-rule-dots);
+  --q-border-dotted: 1px dotted var(--q-rule-dots);
+  --q-border-ink:    2px solid var(--q-ink);          /* number field underline */
+  --q-border-strong: 3px double var(--q-ink);         /* tab-strip footer */
+
+  /* ── Elevation — minimal, only dialogs really have shadow */
+  --q-shadow-dialog: 0 12px 32px rgba(43,31,18,0.20);
+  --q-shadow-menu:   0 12px 32px rgba(43,31,18,0.18);
+
+  /* ── Motion ────────────────────────────────────────────── */
+  --q-dur-fast:   140ms;
+  --q-dur-base:   240ms;
+  --q-ease-out:   cubic-bezier(0.2, 0.7, 0.3, 1.0);
+  --q-ease-emph:  cubic-bezier(0.2, 0.0, 0.0, 1.0);
+}
+
+/* ============================================================
+ * Semantic helpers — use these on real elements as a quick lift
+ * (the JSX prototype uses inline styles instead).
+ * ============================================================ */
+
+.q-kicker {
+  font: var(--q-kicker);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--q-primary);
+}
+
+.q-h1     { font: var(--q-h1);     color: var(--q-ink); letter-spacing: -0.025em; }
+.q-h2     { font: var(--q-h2);     color: var(--q-ink); letter-spacing: -0.02em; }
+.q-h3     { font: var(--q-h3);     color: var(--q-ink); letter-spacing: -0.02em; }
+.q-body   { font: var(--q-body);   color: var(--q-ink); }
+.q-body-2 { font: var(--q-body);   color: var(--q-ink-2); }
+.q-italic { font: var(--q-italic); color: var(--q-ink-3); }
+
+.q-numeric    { font: var(--q-numeric);    color: var(--q-ink); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.q-numeric-lg { font: var(--q-numeric-lg); color: var(--q-ink); font-variant-numeric: tabular-nums; letter-spacing: -0.04em; }

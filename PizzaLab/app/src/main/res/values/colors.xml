@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Primary - Deep Orange -->
-    <color name="pizza_primary">#E65100</color>
-    <color name="pizza_primary_variant">#BF360C</color>
-    <color name="pizza_on_primary">#FFFFFF</color>
+    <!-- Quaderno palette -->
+    <color name="pizza_paper">#FDF9EE</color>
+    <color name="pizza_bg">#F5EEDC</color>
+    <color name="pizza_primary">#A8392B</color>
+    <color name="pizza_primary_variant">#C04A2A</color>
+    <color name="pizza_on_primary">#FDF9EE</color>
+    <color name="pizza_ink">#2B1F12</color>
+    <color name="pizza_ink2">#65553E</color>
+    <color name="pizza_ink3">#9D8B6E</color>
+    <color name="pizza_olive">#5E6B3D</color>
+    <color name="pizza_rule">#D9CEB3</color>
 
-    <!-- Secondary - Warm Amber -->
-    <color name="pizza_secondary">#FF8F00</color>
-    <color name="pizza_secondary_variant">#FF6F00</color>
-    <color name="pizza_on_secondary">#000000</color>
+    <!-- Secondary -->
+    <color name="pizza_secondary">#5E6B3D</color>
+    <color name="pizza_secondary_variant">#3F4A28</color>
+    <color name="pizza_on_secondary">#FDF9EE</color>
 
-    <!-- Tertiary - Tomato Red -->
-    <color name="pizza_tertiary">#D32F2F</color>
-    <color name="pizza_on_tertiary">#FFFFFF</color>
+    <!-- Tertiary -->
+    <color name="pizza_tertiary">#2B1F12</color>
+    <color name="pizza_on_tertiary">#FDF9EE</color>
 
     <!-- Background & Surface -->
-    <color name="pizza_background">#FFF8E1</color>
-    <color name="pizza_surface">#FFFFFF</color>
-    <color name="pizza_on_background">#1B1B1B</color>
-    <color name="pizza_on_surface">#1B1B1B</color>
+    <color name="pizza_background">#F5EEDC</color>
+    <color name="pizza_surface">#FDF9EE</color>
+    <color name="pizza_on_background">#2B1F12</color>
+    <color name="pizza_on_surface">#2B1F12</color>
 
     <!-- Error -->
     <color name="pizza_error">#B00020</color>
-    <color name="pizza_on_error">#FFFFFF</color>
-
-    <!-- Additional warm tones -->
-    <color name="pizza_crust">#D7A86E</color>
-    <color name="pizza_dough">#F5E6CC</color>
-    <color name="pizza_flour">#FFF3E0</color>
-    <color name="pizza_olive_oil">#8BC34A</color>
-    <color name="pizza_basil">#2E7D32</color>
+    <color name="pizza_on_error">#FDF9EE</color>
 </resources>

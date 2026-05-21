@@ -7,15 +7,21 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import com.pizzalab.ui.navigation.PizzaLabBottomBar
 import com.pizzalab.ui.navigation.PizzaLabNavHost
+import com.pizzalab.ui.splash.SplashScreen
 import com.pizzalab.ui.theme.PizzaLabTheme
 
 class MainActivity : ComponentActivity() {
@@ -28,6 +34,8 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Dismiss the system splash screen immediately — we have our own
+        installSplashScreen()
         super.onCreate(savedInstanceState)
 
         requestNotificationPermissionIfNeeded()
@@ -55,15 +63,21 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun PizzaLabApp() {
-    val navController = rememberNavController()
+    var showSplash by rememberSaveable { mutableStateOf(true) }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        bottomBar = { PizzaLabBottomBar(navController) }
-    ) { innerPadding ->
-        PizzaLabNavHost(
-            navController = navController,
-            modifier = Modifier.padding(innerPadding)
-        )
+    if (showSplash) {
+        SplashScreen(onSplashComplete = { showSplash = false })
+    } else {
+        val navController = rememberNavController()
+
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            bottomBar = { PizzaLabBottomBar(navController) }
+        ) { innerPadding ->
+            PizzaLabNavHost(
+                navController = navController,
+                modifier = Modifier.padding(innerPadding)
+            )
+        }
     }
 }

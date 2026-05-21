@@ -2,10 +2,20 @@
 <resources>
 
     <!-- Tema base minimale: la UI Material3 è gestita interamente in Compose -->
-    <style name="Theme.PizzaLab" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:colorBackground">@color/pizza_background</item>
-        <item name="android:statusBarColor">@color/pizza_primary_variant</item>
-        <item name="android:navigationBarColor">@color/pizza_surface</item>
+    <style name="Theme.PizzaLab" parent="Theme.SplashScreen">
+        <!-- Sfondo dello splash di sistema = stesso colore del nostro splash -->
+        <item name="windowSplashScreenBackground">@color/pizza_paper</item>
+        <!-- Nessuna icona nello splash di sistema -->
+        <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+        <!-- Tema post-splash -->
+        <item name="postSplashScreenTheme">@style/Theme.PizzaLab.Main</item>
+    </style>
+
+    <style name="Theme.PizzaLab.Main" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorBackground">@color/pizza_bg</item>
+        <item name="android:statusBarColor">@color/pizza_paper</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/pizza_paper</item>
     </style>
 
 </resources>

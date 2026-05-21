@@ -1,74 +1,83 @@
 package com.pizzalab.ui.calculator
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.pizzalab.domain.PizzaFormulas
 import com.pizzalab.domain.RicettaTeglia
+import com.pizzalab.ui.components.DashedDivider
+import com.pizzalab.ui.components.QCard
+import com.pizzalab.ui.components.QField
+import com.pizzalab.ui.components.QLeaderRow
+import com.pizzalab.ui.components.QSegmented
+import com.pizzalab.ui.theme.QuadernoColors
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TegliaCalculator(modifier: Modifier = Modifier) {
-    var forma by rememberSaveable { mutableStateOf("rotonda") }
-    var formaExpanded by rememberSaveable { mutableStateOf(false) }
+fun TegliaCalculator() {
+    // Shape — driven by QSegmented labels
+    val formaLabels = listOf("Rotonda", "Quadrata", "Rettangolare")
+    var formaLabel by rememberSaveable { mutableStateOf("Rotonda") }
+    val forma = when (formaLabel) {
+        "Rotonda"      -> "rotonda"
+        "Quadrata"     -> "quadrata"
+        "Rettangolare" -> "rettangolare"
+        else           -> "rotonda"
+    }
+
+    // Dimension fields
     var diametro by rememberSaveable { mutableStateOf("32") }
     var lato1 by rememberSaveable { mutableStateOf("40") }
     var lato2 by rememberSaveable { mutableStateOf("30") }
-    var nTeglia by rememberSaveable { mutableFloatStateOf(1f) }
-    var idratazione by rememberSaveable { mutableFloatStateOf(68f) }
-    var saleGPerL by rememberSaveable { mutableFloatStateOf(40f) }
-    var grassiGPerL by rememberSaveable { mutableFloatStateOf(30f) }
-    var oreLievitazione by rememberSaveable { mutableIntStateOf(24) }
-    var temperatura by rememberSaveable { mutableFloatStateOf(22f) }
-    var puntataMin by rememberSaveable { mutableFloatStateOf(120f) }
-    var frigoH by rememberSaveable { mutableFloatStateOf(16f) }
-    var aprettoMin by rememberSaveable { mutableFloatStateOf(330f) }
-    var lievExpanded by rememberSaveable { mutableStateOf(false) }
 
-    val formaOptions = listOf("rotonda" to "Rotonda", "quadrata" to "Quadrata", "rettangolare" to "Rettangolare")
-    val oreLievOptions = listOf(8, 12, 24, 48)
+    // Numeric state — kept as Int/Float and exposed as strings to QField
+    var nTeglia by rememberSaveable { mutableStateOf(1) }
+    var idratazione by rememberSaveable { mutableStateOf(68) }
+    var saleGPerL by rememberSaveable { mutableStateOf(40) }
+    var grassiGPerL by rememberSaveable { mutableStateOf(30) }
+    var oreLievitazione by rememberSaveable { mutableStateOf(24) }
+    var temperatura by rememberSaveable { mutableStateOf(22) }
+    var puntataMin by rememberSaveable { mutableStateOf(120) }
+    var frigoH by rememberSaveable { mutableStateOf(16) }
+    var aprettoMin by rememberSaveable { mutableStateOf(330) }
+
+    val oreLievOptions = listOf("8", "12", "24", "48")
+    val diametroPresets = listOf("26", "28", "30", "32", "36")
 
     val ricetta by remember {
         derivedStateOf {
             try {
                 PizzaFormulas.calcTeglia(
                     forma = forma,
-                    nTeglia = nTeglia.roundToInt(),
+                    nTeglia = nTeglia,
                     idroPct = idratazione.toDouble(),
                     saleGPerL = saleGPerL.toDouble(),
                     grassiGPerL = grassiGPerL.toDouble(),
                     liev = oreLievitazione,
-                    frigoH = frigoH.roundToInt(),
-                    puntataMin = puntataMin.roundToInt(),
-                    aprettoMin = aprettoMin.roundToInt(),
-                    T = temperatura.roundToInt(),
+                    frigoH = frigoH,
+                    puntataMin = puntataMin,
+                    aprettoMin = aprettoMin,
+                    T = temperatura,
                     d = diametro.toDoubleOrNull() ?: 0.0,
                     rl1 = lato1.toDoubleOrNull() ?: 0.0,
                     rl2 = lato2.toDoubleOrNull() ?: 0.0
@@ -80,223 +89,222 @@ fun TegliaCalculator(modifier: Modifier = Modifier) {
     }
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
+            .background(QuadernoColors.Bg)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
-        Text(
-            "Calcolatore Teglia",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
+        // Shape selector
+        QSegmented(
+            items = formaLabels,
+            selected = formaLabel,
+            onSelect = { formaLabel = it },
+            modifier = Modifier.padding(horizontal = 22.dp, vertical = 14.dp)
         )
 
-        // Forma teglia
-        ExposedDropdownMenuBox(
-            expanded = formaExpanded,
-            onExpandedChange = { formaExpanded = it }
-        ) {
-            OutlinedTextField(
-                value = formaOptions.first { it.first == forma }.second,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Forma teglia") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = formaExpanded) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor()
-            )
-            ExposedDropdownMenu(
-                expanded = formaExpanded,
-                onDismissRequest = { formaExpanded = false }
-            ) {
-                formaOptions.forEach { (key, label) ->
-                    DropdownMenuItem(
-                        text = { Text(label) },
-                        onClick = {
-                            forma = key
-                            formaExpanded = false
-                        }
-                    )
-                }
-            }
-        }
-
-        // Dimension inputs based on forma
+        // Dimension fields
         when (forma) {
             "rotonda" -> {
-                OutlinedTextField(
+                QField(
+                    label = "Diametro",
                     value = diametro,
-                    onValueChange = { diametro = it },
-                    label = { Text("Diametro (cm)") },
-                    modifier = Modifier.fillMaxWidth()
+                    suffix = "cm",
+                    onMinus = {
+                        val v = diametro.toIntOrNull() ?: 32
+                        diametro = (v - 1).coerceAtLeast(1).toString()
+                    },
+                    onPlus = {
+                        val v = diametro.toIntOrNull() ?: 32
+                        diametro = (v + 1).toString()
+                    },
+                    presets = diametroPresets,
+                    selectedPreset = diametro,
+                    onPresetSelect = { diametro = it },
                 )
             }
             "quadrata" -> {
-                OutlinedTextField(
+                QField(
+                    label = "Lato",
                     value = lato1,
-                    onValueChange = { lato1 = it },
-                    label = { Text("Lato (cm)") },
-                    modifier = Modifier.fillMaxWidth()
+                    suffix = "cm",
+                    onMinus = {
+                        val v = lato1.toIntOrNull() ?: 40
+                        lato1 = (v - 1).coerceAtLeast(1).toString()
+                    },
+                    onPlus = {
+                        val v = lato1.toIntOrNull() ?: 40
+                        lato1 = (v + 1).toString()
+                    },
                 )
             }
             "rettangolare" -> {
-                OutlinedTextField(
+                QField(
+                    label = "Lato 1",
                     value = lato1,
-                    onValueChange = { lato1 = it },
-                    label = { Text("Lato 1 (cm)") },
-                    modifier = Modifier.fillMaxWidth()
+                    suffix = "cm",
+                    onMinus = {
+                        val v = lato1.toIntOrNull() ?: 40
+                        lato1 = (v - 1).coerceAtLeast(1).toString()
+                    },
+                    onPlus = {
+                        val v = lato1.toIntOrNull() ?: 40
+                        lato1 = (v + 1).toString()
+                    },
                 )
-                OutlinedTextField(
+                QField(
+                    label = "Lato 2",
                     value = lato2,
-                    onValueChange = { lato2 = it },
-                    label = { Text("Lato 2 (cm)") },
-                    modifier = Modifier.fillMaxWidth()
+                    suffix = "cm",
+                    onMinus = {
+                        val v = lato2.toIntOrNull() ?: 30
+                        lato2 = (v - 1).coerceAtLeast(1).toString()
+                    },
+                    onPlus = {
+                        val v = lato2.toIntOrNull() ?: 30
+                        lato2 = (v + 1).toString()
+                    },
                 )
             }
         }
 
-        SliderInput(
+        QField(
             label = "Numero teglie",
-            value = nTeglia,
-            onValueChange = { nTeglia = it },
-            valueRange = 1f..6f,
-            steps = 4,
-            valueDisplay = "${nTeglia.roundToInt()}"
+            value = nTeglia.toString(),
+            onMinus = { nTeglia = (nTeglia - 1).coerceAtLeast(1) },
+            onPlus = { nTeglia = (nTeglia + 1).coerceAtMost(6) },
+            dense = true,
         )
 
-        SliderInput(
+        QField(
             label = "Idratazione",
-            value = idratazione,
-            onValueChange = { idratazione = it },
-            valueRange = 60f..80f,
-            steps = 19,
-            valueDisplay = "${idratazione.roundToInt()} %"
+            value = idratazione.toString(),
+            suffix = "%",
+            onMinus = { idratazione = (idratazione - 1).coerceAtLeast(60) },
+            onPlus = { idratazione = (idratazione + 1).coerceAtMost(80) },
+            dense = true,
         )
 
-        SliderInput(
+        QField(
             label = "Sale",
-            value = saleGPerL,
-            onValueChange = { saleGPerL = it },
-            valueRange = 20f..60f,
-            steps = 7,
-            valueDisplay = "${saleGPerL.roundToInt()} g/L"
+            value = saleGPerL.toString(),
+            suffix = "g/L",
+            onMinus = { saleGPerL = (saleGPerL - 5).coerceAtLeast(20) },
+            onPlus = { saleGPerL = (saleGPerL + 5).coerceAtMost(60) },
+            dense = true,
         )
 
-        SliderInput(
+        QField(
             label = "Grassi (olio)",
-            value = grassiGPerL,
-            onValueChange = { grassiGPerL = it },
-            valueRange = 0f..80f,
-            steps = 15,
-            valueDisplay = "${grassiGPerL.roundToInt()} g/L"
+            value = grassiGPerL.toString(),
+            suffix = "g/L",
+            onMinus = { grassiGPerL = (grassiGPerL - 5).coerceAtLeast(0) },
+            onPlus = { grassiGPerL = (grassiGPerL + 5).coerceAtMost(80) },
+            dense = true,
         )
 
-        // Ore lievitazione
-        ExposedDropdownMenuBox(
-            expanded = lievExpanded,
-            onExpandedChange = { lievExpanded = it }
-        ) {
-            OutlinedTextField(
-                value = "$oreLievitazione ore",
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Ore lievitazione") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = lievExpanded) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor()
-            )
-            ExposedDropdownMenu(
-                expanded = lievExpanded,
-                onDismissRequest = { lievExpanded = false }
-            ) {
-                oreLievOptions.forEach { ore ->
-                    DropdownMenuItem(
-                        text = { Text("$ore ore") },
-                        onClick = {
-                            oreLievitazione = ore
-                            lievExpanded = false
-                        }
-                    )
-                }
-            }
-        }
-
-        SliderInput(
-            label = "Temperatura ambiente",
-            value = temperatura,
-            onValueChange = { temperatura = it },
-            valueRange = 18f..30f,
-            steps = 11,
-            valueDisplay = "${temperatura.roundToInt()} °C"
+        QField(
+            label = "Ore lievitazione",
+            value = oreLievitazione.toString(),
+            suffix = "ore",
+            onMinus = {
+                val idx = oreLievOptions.indexOf(oreLievitazione.toString())
+                if (idx > 0) oreLievitazione = oreLievOptions[idx - 1].toInt()
+            },
+            onPlus = {
+                val idx = oreLievOptions.indexOf(oreLievitazione.toString())
+                if (idx < oreLievOptions.lastIndex) oreLievitazione = oreLievOptions[idx + 1].toInt()
+            },
+            presets = oreLievOptions,
+            selectedPreset = oreLievitazione.toString(),
+            onPresetSelect = { oreLievitazione = it.toInt() },
         )
 
-        SliderInput(
+        QField(
+            label = "Temperatura",
+            value = temperatura.toString(),
+            suffix = "°C",
+            onMinus = { temperatura = (temperatura - 1).coerceAtLeast(18) },
+            onPlus = { temperatura = (temperatura + 1).coerceAtMost(30) },
+        )
+
+        QField(
             label = "Puntata",
-            value = puntataMin,
-            onValueChange = { puntataMin = it },
-            valueRange = 30f..300f,
-            steps = 8,
-            valueDisplay = "${puntataMin.roundToInt()} min"
+            value = puntataMin.toString(),
+            suffix = "min",
+            onMinus = { puntataMin = (puntataMin - 30).coerceAtLeast(30) },
+            onPlus = { puntataMin = (puntataMin + 30).coerceAtMost(300) },
         )
 
-        SliderInput(
+        QField(
             label = "Frigo",
-            value = frigoH,
-            onValueChange = { frigoH = it },
-            valueRange = 0f..48f,
-            steps = 47,
-            valueDisplay = "${frigoH.roundToInt()} h"
+            value = frigoH.toString(),
+            suffix = "h",
+            onMinus = { frigoH = (frigoH - 4).coerceAtLeast(0) },
+            onPlus = { frigoH = (frigoH + 4).coerceAtMost(48) },
         )
 
-        SliderInput(
+        QField(
             label = "Appretto",
-            value = aprettoMin,
-            onValueChange = { aprettoMin = it },
-            valueRange = 60f..600f,
-            steps = 8,
-            valueDisplay = "${aprettoMin.roundToInt()} min"
+            value = aprettoMin.toString(),
+            suffix = "min",
+            onMinus = { aprettoMin = (aprettoMin - 30).coerceAtLeast(60) },
+            onPlus = { aprettoMin = (aprettoMin + 30).coerceAtMost(600) },
         )
 
-        // Results
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Result card
         ricetta?.let { r ->
             TegliaResultCard(r)
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
 @Composable
 private fun TegliaResultCard(r: RicettaTeglia) {
-    OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+    QCard(
+        kicker = "Ricetta",
+        title = "Teglia",
+        titleSuffix = "${r.pesoPanetto} g",
+    ) {
+        QLeaderRow(label = "Area teglia", value = "${r.areaCm2}", unit = "cm²")
+        QLeaderRow(label = "Farina", value = "${r.farina}", unit = "g")
+        QLeaderRow(label = "Acqua", value = "${r.acqua}", unit = "g")
+        QLeaderRow(label = "Sale", value = "${r.sale}", unit = "g")
+        QLeaderRow(label = "Olio", value = "${r.olio}", unit = "g")
+        QLeaderRow(label = "Lievito fresco", value = "${r.ldbf}", unit = "g")
+        QLeaderRow(label = "Lievito secco", value = "${r.ldbs}", unit = "g")
+
+        DashedDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+        QLeaderRow(label = "Totale", value = "${r.totale}", unit = "g", strong = true)
+
+        DashedDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+        // Footer: forza consigliata in olive
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                "Ricetta",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                text = "forza consigliata",
+                style = TextStyle(
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = QuadernoColors.Olive,
+                ),
             )
-
-            ResultRow("Peso panetto", "${r.pesoPanetto} g")
-            ResultRow("Area teglia", "${r.areaCm2} cm²")
-
-            Divider(modifier = Modifier.padding(vertical = 4.dp))
-
-            ResultRow("Farina", "${r.farina} g")
-            ResultRow("Acqua", "${r.acqua} g")
-            ResultRow("Sale", "${r.sale} g")
-            ResultRow("Olio", "${r.olio} g")
-            ResultRow("Lievito fresco", "${r.ldbf} g")
-            ResultRow("Lievito secco", "${r.ldbs} g")
-
-            Divider(modifier = Modifier.padding(vertical = 4.dp))
-
-            ResultRow("Totale", "${r.totale} g")
-            ResultRow("Forza consigliata", "W${r.forza}")
+            Text(
+                text = "W ${r.forza}",
+                style = TextStyle(
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = QuadernoColors.Olive,
+                ),
+            )
         }
     }
 }
