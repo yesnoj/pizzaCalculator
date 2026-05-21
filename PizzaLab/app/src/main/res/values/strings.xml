@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PizzaLab</string>
+    <string name="notification_channel_timer">Timer Notifications</string>
+    <string name="notification_channel_timer_description">Notifications for active timers</string>
+    <string name="notification_channel_process">Process Notifications</string>
+    <string name="notification_channel_process_description">Notifications for dough process steps</string>
+</resources>

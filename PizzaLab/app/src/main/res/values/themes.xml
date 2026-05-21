@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Tema base minimale: la UI Material3 è gestita interamente in Compose -->
+    <style name="Theme.PizzaLab" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorBackground">@color/pizza_background</item>
+        <item name="android:statusBarColor">@color/pizza_primary_variant</item>
+        <item name="android:navigationBarColor">@color/pizza_surface</item>
+    </style>
+
+</resources>
