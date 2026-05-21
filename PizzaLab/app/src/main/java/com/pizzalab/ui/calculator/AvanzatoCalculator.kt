@@ -51,7 +51,7 @@ fun AvanzatoCalculator(onStartProcess: () -> Unit = {}) {
     var aprettoMin by rememberSaveable { mutableFloatStateOf(330f) }
 
     val panettiPresets = listOf("2", "4", "6", "8")
-    val orePresets = listOf("8", "12", "24", "48")
+    val orePresets = listOf("1", "2", "4", "6", "8", "12", "24", "48")
 
     val ricetta by remember {
         derivedStateOf {
@@ -150,14 +150,16 @@ fun AvanzatoCalculator(onStartProcess: () -> Unit = {}) {
             value = "$oreLievitazione",
             suffix = "h",
             onMinus = {
-                val opts = listOf(8, 12, 24, 48)
+                val opts = listOf(1, 2, 4, 6, 8, 12, 24, 48)
                 val idx = opts.indexOf(oreLievitazione)
                 if (idx > 0) oreLievitazione = opts[idx - 1]
+                else if (idx == -1 && oreLievitazione > 1) oreLievitazione = opts.last { it < oreLievitazione }
             },
             onPlus = {
-                val opts = listOf(8, 12, 24, 48)
+                val opts = listOf(1, 2, 4, 6, 8, 12, 24, 48)
                 val idx = opts.indexOf(oreLievitazione)
-                if (idx < opts.size - 1) oreLievitazione = opts[idx + 1]
+                if (idx < opts.lastIndex) oreLievitazione = opts[idx + 1]
+                else if (idx == -1 && oreLievitazione < 48) oreLievitazione = opts.first { it > oreLievitazione }
             },
             dense = true,
             presets = orePresets,

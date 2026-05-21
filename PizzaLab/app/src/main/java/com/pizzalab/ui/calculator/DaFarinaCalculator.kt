@@ -122,7 +122,7 @@ fun DaFarinaCalculator(onStartProcess: () -> Unit = {}, onModeChange: () -> Unit
     if (idratazione > idrMax) idratazione = idrMax
 
     // ── Ore presets ─────────────────────────────────────────────
-    val orePresets = listOf("6", "8", "12", "24", "48")
+    val orePresets = listOf("1", "2", "4", "6", "8", "12", "24", "48")
 
     // ── UI ──────────────────────────────────────────────────────
     Column(
@@ -210,17 +210,19 @@ fun DaFarinaCalculator(onStartProcess: () -> Unit = {}, onModeChange: () -> Unit
             value = oreLievitazione.toString(),
             suffix = if (isRapido) "ore (rapido)" else "ore",
             onMinus = {
-                val opts = listOf(6, 8, 12, 24, 48)
+                val opts = listOf(1, 2, 4, 6, 8, 12, 24, 48)
                 val idx = opts.indexOf(oreLievitazione)
                 if (idx > 0) oreLievitazione = opts[idx - 1]
+                else if (idx == -1) oreLievitazione = opts.last { it < oreLievitazione }
             },
             onPlus = {
-                val opts = listOf(6, 8, 12, 24, 48)
+                val opts = listOf(1, 2, 4, 6, 8, 12, 24, 48)
                 val idx = opts.indexOf(oreLievitazione)
                 if (idx < opts.lastIndex) oreLievitazione = opts[idx + 1]
+                else if (idx == -1) oreLievitazione = opts.first { it > oreLievitazione }
             },
             presets = orePresets,
-            selectedPreset = if (oreLievitazione in listOf(6, 8, 12, 24, 48)) oreLievitazione.toString() else null,
+            selectedPreset = if (oreLievitazione in listOf(1, 2, 4, 6, 8, 12, 24, 48)) oreLievitazione.toString() else null,
             onPresetSelect = { oreLievitazione = it.toInt() }
         )
 
